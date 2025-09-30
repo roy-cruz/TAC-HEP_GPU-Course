@@ -4,6 +4,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdexcept> //
+#include <typeinfo> //
 
 #include "t1.h"
 
@@ -20,15 +22,22 @@
 // Particle Class
 //
 class Particle{
-
 	public:
-	Particle();
-	// FIXME : Create an additional constructor that takes 4 arguments --> the 4-momentum
-	double   pt, eta, phi, E, m, p[4];
-	void     p4(double, double, double, double);
-	void     print();
-	void     setMass(double);
-	double   sintheta();
+		Particle();
+		// FIXME : Create an additional constructor that takes 4 arguments --> the 4-momentum
+		Particle(double, double, double, double);
+
+		// Added factory since data is in (pt, eta, phi, E) format
+		static Particle FromPtEtaPhiE(double pT, double eta, double phi, double E);
+		
+		// Member variables
+		double   pt, eta, phi, E, m, p[4]; 
+
+		// Methods
+		void     p4(double, double, double, double);
+		void     print();
+		void     setMass(double);
+		double   sintheta();
 };
 
 //------------------------------------------------------------------------------
@@ -48,27 +57,75 @@ Particle::Particle(){
 }
 
 //*** Additional constructor ------------------------------------------------------
-Particle::Particle( ){ 
-	//FIXME
+Particle::Particle(double energy, double px, double py, double pz){ 
+	
+	if (energy < 1e-9){
+		pt = eta = phi = E = m = 0.0;
+		p[0] = p[1] = p[2] = p[3] = 0.0;
+		return;
+	}
+
+	double m2 = energy*energy - (px*px + py*py + pz*pz);
+	m = std::sqrt(m2);
+
+	p[0] = energy;
+	p[1] = px;
+	p[2] = py;
+	p[3] = pz;
+
+	// Computing rest of quantities
+	pt = std::sqrt(px*px + py*pz);
+	phi = std::atan2(py,px);
+	eta = 0.5 * std::log((energy + pz)/(energy - pz));
+	E = energy;
+
+}
+
+Particle Particle::FromPtEtaPhiE(double pT, double eta, double phi, double E) {
+	Particle obj;		   // default constructed
+	obj.p4(pT, eta, phi, E);
+	return obj;
 }
 
 //
 //*** Members  ------------------------------------------------------
 //
-double Particle::sintheta(){
-
-	//FIXME
+double Particle::sintheta() {
+	double p_magnitude = std::sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
+	double sin_theta = (p_magnitude <1e-9) ? 0.0 : pt/p_magnitude;
+	return sin_theta;
 }
 
 void Particle::p4(double pT, double eta, double phi, double energy){
 
-	//FIXME
+	if (energy < 1e-9){
+		pt = eta = phi = E = m = 0.0;
+		p[0] = p[1] = p[2] = p[3] = 0.0;
+		return;
+	}
 
+	double m2 = energy*energy - pT*pT * std::pow(std::cosh(eta),2);
+	this->m = std::sqrt(m2);
+	
+	double px = pT * std::cos(phi);
+	double py = pT * std::sin(phi);
+	double pz = pT * std::sinh(eta);
+
+	this->E = energy;
+	this->pt = pT;
+	this->eta = eta;
+	this->phi = std::fmod(phi, M_PI);
+
+	p[0] = energy;
+	p[1] = px;
+	p[2] = py;
+	p[3] = pz;
 }
 
 void Particle::setMass(double mass)
 {
-	// FIXME
+	if (mass < 0) throw std::invalid_argument("setMass: negative mass");
+	m = mass;
 }
 
 //
@@ -84,6 +141,8 @@ int main() {
 	/* ************* */
 	/* Input Tree   */
 	/* ************* */
+
+	std::cout << "Program start!" << std::endl;
 
 	TFile *f      = new TFile("input.root","READ");
 	TTree *t1 = (TTree*)(f->Get("t1"));
@@ -104,14 +163,27 @@ int main() {
 
 	// Total number of events in ROOT tree
 	Long64_t nentries = t1->GetEntries();
+	std::cout << "Number of entries: " << nentries << std::endl;
 
-	for (Long64_t jentry=0; jentry<100;jentry++)
+	for (Long64_t jentry=0; jentry<(Long64_t)nentries/100; jentry++)
  	{
-		t1->GetEntry(jentry);
-		std::cout<<" Event "<< jentry <<std::endl;	
+		t1->GetEntry(jentry); // Changes the address in address in memory each lep and jet var is refering to
+		std::cout<<"Event "<< jentry <<std::endl;	
 
 		//FIX ME
+		std::cout << "   Printing lepton kinematics: " << std::endl;
+		for (Long64_t ilep=0; ilep<maxLepSize; ilep++) {
+			Particle lepton = Particle::FromPtEtaPhiE(lepPt[ilep], lepEta[ilep], lepPhi[ilep], lepE[ilep]);
+			if (lepton.E == 0.0) continue; // skip uninitialized leptons
+			lepton.print();
+		}
 
+		std::cout << "   Printing jet kinematics: " << std::endl;
+		for (Long64_t ijet=0; ijet<maxJetSize; ijet++) {
+			Particle jet = Particle::FromPtEtaPhiE(jetPt[ijet], lepEta[ijet], lepPhi[ijet], lepE[ijet]);
+			if (jet.E == 0.0) continue; // skip uninitialized jets
+			jet.print();
+		}
 
 	} // Loop over all events
 
