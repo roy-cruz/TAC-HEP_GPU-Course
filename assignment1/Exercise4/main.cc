@@ -25,20 +25,41 @@ class Particle{
 	public:
 		Particle();
 		// FIXME : Create an additional constructor that takes 4 arguments --> the 4-momentum
-		Particle(double, double, double, double);
+		Particle(double px, double py, double pz, double energy);
 
-		// Added factory since data is in (pt, eta, phi, E) format
-		static Particle FromPtEtaPhiE(double pT, double eta, double phi, double E);
+		// Added factory since data provided is in pt, eta, phi, E format
+		static Particle FromPtEtaPhiE(double pt, double eta, double phi, double energy);
 		
 		// Member variables
 		double   pt, eta, phi, E, m, p[4]; 
 
 		// Methods
-		void     p4(double, double, double, double);
+		void     p4(double pt, double eta, double phi, double energy);
 		void     print();
-		void     setMass(double);
+		void     setMass(double mass);
 		double   sintheta();
 };
+
+class Lepton : public Particle {
+	public: 
+		Lepton() : Particle(), Q(0) {};
+		Lepton(double px, double py, double pz, double energy, int charge) : Particle(px, py, pz, energy), Q(charge) {};
+		static Lepton FromPtEtaPhiE(double pt, double eta, double phi, double energy, int charge);
+
+		int Q;	
+		void	setCharge(int charge);
+};
+
+class Jet : public Particle {
+	public: 
+		Jet() : Particle(), hadronFlav(-1) {};
+		Jet(double px, double py, double pz, double energy, int hadronFlavor) : Particle(px, py, pz, energy), hadronFlav(hadronFlavor) {};
+ 		static Jet FromPtEtaPhiE(double pt, double eta, double phi, double energy, int hadronFlavor);
+
+		int hadronFlav;
+		void	setHadronFlavor(int flavor);
+};
+
 
 //------------------------------------------------------------------------------
 
@@ -57,7 +78,7 @@ Particle::Particle(){
 }
 
 //*** Additional constructor ------------------------------------------------------
-Particle::Particle(double energy, double px, double py, double pz){ 
+Particle::Particle(double px, double py, double pz, double energy){ 
 	
 	if (energy < 1e-9){
 		pt = eta = phi = E = m = 0.0;
@@ -74,10 +95,10 @@ Particle::Particle(double energy, double px, double py, double pz){
 	p[3] = pz;
 
 	// Computing rest of quantities
+	E = energy;
 	pt = std::sqrt(px*px + py*pz);
 	phi = std::atan2(py,px);
 	eta = 0.5 * std::log((energy + pz)/(energy - pz));
-	E = energy;
 
 }
 
@@ -136,6 +157,28 @@ void Particle::print(){
 	std::cout << "(" << p[0] <<",\t" << p[1] <<",\t"<< p[2] <<",\t"<< p[3] << ")" << "  " <<  sintheta() << std::endl;
 }
 
+Lepton Lepton::FromPtEtaPhiE(double pt, double eta, double phi, double energy, int charge) {
+	Lepton obj;
+	obj.p4(pt, eta, phi, energy);
+	obj.setCharge(charge);
+	return obj;
+}
+
+void Lepton::setCharge(int charge) {
+	Q = charge;
+}
+
+Jet Jet::FromPtEtaPhiE(double pt, double eta, double phi, double energy, int hadronFlavor) {
+	Jet obj; // Runs Particle constructor
+	obj.p4(pt, eta, phi, energy);
+	obj.setHadronFlavor(hadronFlavor);
+	return obj;
+}
+
+void Jet::setHadronFlavor(int hadronFlavor) {
+	hadronFlav = hadronFlavor;
+}
+
 int main() {
 	
 	/* ************* */
@@ -173,18 +216,22 @@ int main() {
 		//FIX ME
 		std::cout << "   Printing lepton kinematics: " << std::endl;
 		for (Long64_t ilep=0; ilep<maxLepSize; ilep++) {
-			Particle lepton = Particle::FromPtEtaPhiE(lepPt[ilep], lepEta[ilep], lepPhi[ilep], lepE[ilep]);
+			Lepton lepton = Lepton::FromPtEtaPhiE(lepPt[ilep], lepEta[ilep], lepPhi[ilep], lepE[ilep], lepQ[ilep]);
 			if (lepton.E == 0.0) continue; // skip uninitialized leptons
 			lepton.print();
+			std::cout << "   Charge: " << lepQ[ilep] << std::endl;
 		}
+
+		std::cout << std::endl;
 
 		std::cout << "   Printing jet kinematics: " << std::endl;
 		for (Long64_t ijet=0; ijet<maxJetSize; ijet++) {
-			Particle jet = Particle::FromPtEtaPhiE(jetPt[ijet], lepEta[ijet], lepPhi[ijet], lepE[ijet]);
+			Particle jet = Jet::FromPtEtaPhiE(jetPt[ijet], jetEta[ijet], jetPhi[ijet], jetE[ijet], jetHadronFlavour[ijet]);
 			if (jet.E == 0.0) continue; // skip uninitialized jets
 			jet.print();
+			std::cout << "   Hadron Flavor: " << jetHadronFlavour[ijet] << std::endl;
 		}
-
+		std::cout << "--------------------------------------------------" << std::endl;
 	} // Loop over all events
 
   	return 0;
