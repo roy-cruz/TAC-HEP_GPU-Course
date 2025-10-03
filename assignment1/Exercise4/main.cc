@@ -4,8 +4,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdexcept> //
-#include <typeinfo> //
 
 #include "t1.h"
 
@@ -16,52 +14,51 @@
 #include <TCanvas.h> 
 #include <TLorentzVector.h>
 
+// Class prototypes
 
-
-//------------------------------------------------------------------------------
-// Particle Class
-//
 class Particle{
 	public:
 		Particle();
 		// FIXME : Create an additional constructor that takes 4 arguments --> the 4-momentum
-		Particle(double px, double py, double pz, double energy);
+		Particle(Float_t px, Float_t py, Float_t pz, Float_t energy);
 
 		// Added factory since data provided is in pt, eta, phi, E format
-		static Particle FromPtEtaPhiE(double pt, double eta, double phi, double energy);
+		static Particle FromPtEtaPhiE(Float_t pt, Float_t eta, Float_t phi, Float_t energy);
 		
 		// Member variables
-		double   pt, eta, phi, E, m, p[4]; 
+		Float_t   pt, eta, phi, E, m, p[4]; 
+
+		// p[0] -> E
+		// p[1] -> px
+		// p[2] -> py
+		// p[3] -> pz
 
 		// Methods
-		void     p4(double pt, double eta, double phi, double energy);
+		void     p4(Float_t pt, Float_t eta, Float_t phi, Float_t energy);
 		void     print();
-		void     setMass(double mass);
-		double   sintheta();
+		void     setMass(Float_t mass) { m = mass; };
+		Float_t   sintheta();
 };
 
 class Lepton : public Particle {
 	public: 
 		Lepton() : Particle(), Q(0) {};
-		Lepton(double px, double py, double pz, double energy, int charge) : Particle(px, py, pz, energy), Q(charge) {};
-		static Lepton FromPtEtaPhiE(double pt, double eta, double phi, double energy, int charge);
+		Lepton(Float_t px, Float_t py, Float_t pz, Float_t energy, Int_t charge) : Particle(px, py, pz, energy), Q(charge) {};
+		static Lepton FromPtEtaPhiE(Float_t pt, Float_t eta, Float_t phi, Float_t energy, Int_t charge);
 
-		int Q;	
-		void	setCharge(int charge);
+		Int_t 	Q;	
+		void	setCharge(Int_t charge) { Q = charge; };
 };
 
 class Jet : public Particle {
 	public: 
-		Jet() : Particle(), hadronFlav(-1) {};
-		Jet(double px, double py, double pz, double energy, int hadronFlavor) : Particle(px, py, pz, energy), hadronFlav(hadronFlavor) {};
- 		static Jet FromPtEtaPhiE(double pt, double eta, double phi, double energy, int hadronFlavor);
+		Jet() : Particle(), hadronFlav(-1) {}; // -1 here means undefined/unspecified
+		Jet(Float_t px, Float_t py, Float_t pz, Float_t energy, Int_t hadronFlavor) : Particle(px, py, pz, energy), hadronFlav(hadronFlavor) {};
+ 		static Jet FromPtEtaPhiE(Float_t pt, Float_t eta, Float_t phi, Float_t energy, Int_t hadronFlavor);
 
-		int hadronFlav;
-		void	setHadronFlavor(int flavor);
+		Int_t 	hadronFlav;
+		void	setHadronFlavor(Int_t flavor) { hadronFlav = flavor; };
 };
-
-
-//------------------------------------------------------------------------------
 
 //*****************************************************************************
 //                                                                             *
@@ -69,32 +66,23 @@ class Jet : public Particle {
 //                                                                             *
 //*****************************************************************************
 
-//
-//*** Default constructor ------------------------------------------------------
-//
 Particle::Particle(){
 	pt = eta = phi = E = m = 0.0;
 	p[0] = p[1] = p[2] = p[3] = 0.0;
 }
 
-//*** Additional constructor ------------------------------------------------------
-Particle::Particle(double px, double py, double pz, double energy){ 
-	
-	if (energy < 1e-9){
-		pt = eta = phi = E = m = 0.0;
-		p[0] = p[1] = p[2] = p[3] = 0.0;
-		return;
-	}
-
-	double m2 = energy*energy - (px*px + py*py + pz*pz);
-	m = std::sqrt(m2);
+Particle::Particle(Float_t px, Float_t py, Float_t pz, Float_t energy){ 
 
 	p[0] = energy;
 	p[1] = px;
 	p[2] = py;
 	p[3] = pz;
-
+	
 	// Computing rest of quantities
+
+	Float_t m2 = energy*energy - (px*px + py*py + pz*pz);
+	this->setMass(std::sqrt(m2));
+
 	E = energy;
 	pt = std::sqrt(px*px + py*pz);
 	phi = std::atan2(py,px);
@@ -102,84 +90,78 @@ Particle::Particle(double px, double py, double pz, double energy){
 
 }
 
-Particle Particle::FromPtEtaPhiE(double pT, double eta, double phi, double E) {
-	Particle obj;		   // default constructed
+Particle Particle::FromPtEtaPhiE(Float_t pT, Float_t eta, Float_t phi, Float_t E) {
+	Particle obj;
 	obj.p4(pT, eta, phi, E);
 	return obj;
 }
 
-//
-//*** Members  ------------------------------------------------------
-//
-double Particle::sintheta() {
-	double p_magnitude = std::sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
-	double sin_theta = (p_magnitude <1e-9) ? 0.0 : pt/p_magnitude;
-	return sin_theta;
+
+Float_t Particle::sintheta() {
+	Float_t p_magnitude = std::sqrt(p[1]*p[1] + p[2]*p[2] + p[3]*p[3]);
+	Float_t sintheta = pt / p_magnitude;
+	return sintheta;
 }
 
-void Particle::p4(double pT, double eta, double phi, double energy){
+void Particle::p4(Float_t pT, Float_t eta, Float_t phi, Float_t energy){
 
-	if (energy < 1e-9){
-		pt = eta = phi = E = m = 0.0;
-		p[0] = p[1] = p[2] = p[3] = 0.0;
-		return;
-	}
-
-	double m2 = energy*energy - pT*pT * std::pow(std::cosh(eta),2);
-	this->m = std::sqrt(m2);
-	
-	double px = pT * std::cos(phi);
-	double py = pT * std::sin(phi);
-	double pz = pT * std::sinh(eta);
-
+	Float_t m2 = energy*energy - pT*pT * std::pow(std::cosh(eta),2);
+	this->setMass(std::sqrt(m2));
 	this->E = energy;
 	this->pt = pT;
 	this->eta = eta;
 	this->phi = std::fmod(phi, M_PI);
+	
+	Float_t px = pT * std::cos(phi);
+	Float_t py = pT * std::sin(phi);
+	Float_t pz = pT * std::sinh(eta);
 
 	p[0] = energy;
 	p[1] = px;
 	p[2] = py;
 	p[3] = pz;
+
 }
 
-void Particle::setMass(double mass)
-{
-	if (mass < 0) throw std::invalid_argument("setMass: negative mass");
-	m = mass;
-}
-
-//
-//*** Prints 4-vector ----------------------------------------------------------
-//
 void Particle::print(){
 	std::cout << std::endl;
-	std::cout << "(" << p[0] <<",\t" << p[1] <<",\t"<< p[2] <<",\t"<< p[3] << ")" << "  " <<  sintheta() << std::endl;
+	std::cout << "p4 = (" << p[0] <<",\t" << p[1] <<",\t"<< p[2] <<",\t"<< p[3] << ")" << std::endl;
+	std::cout << "sin(theta) = " << sintheta() << std::endl;
+	// Printing out the other members
+	std::cout << "pt: " << pt << ", eta: " << eta << ", phi: " << phi << ", E: " << E << ", m: " << m << std::endl;
 }
 
-Lepton Lepton::FromPtEtaPhiE(double pt, double eta, double phi, double energy, int charge) {
+//*****************************************************************************
+//                                                                             *
+//    MEMBERS functions of the Lepton Class                                    *
+//                                                                             *
+//*****************************************************************************
+
+
+Lepton Lepton::FromPtEtaPhiE(Float_t pt, Float_t eta, Float_t phi, Float_t energy, Int_t charge) {
 	Lepton obj;
 	obj.p4(pt, eta, phi, energy);
 	obj.setCharge(charge);
 	return obj;
 }
 
-void Lepton::setCharge(int charge) {
-	Q = charge;
-}
+//*****************************************************************************
+//                                                                             *
+//    MEMBERS functions of the Jet Class                                       *
+//                                                                             *
+//*****************************************************************************
 
-Jet Jet::FromPtEtaPhiE(double pt, double eta, double phi, double energy, int hadronFlavor) {
+
+Jet Jet::FromPtEtaPhiE(Float_t pt, Float_t eta, Float_t phi, Float_t energy, Int_t hadronFlavor) {
 	Jet obj; // Runs Particle constructor
 	obj.p4(pt, eta, phi, energy);
 	obj.setHadronFlavor(hadronFlavor);
 	return obj;
 }
 
-void Jet::setHadronFlavor(int hadronFlavor) {
-	hadronFlav = hadronFlavor;
-}
+//****************************************************************************
 
-int main() {
+Int_t main() {
 	
 	/* ************* */
 	/* Input Tree   */
@@ -187,7 +169,7 @@ int main() {
 
 	std::cout << "Program start!" << std::endl;
 
-	TFile *f      = new TFile("input.root","READ");
+	TFile *f  = new TFile("input.root","READ");
 	TTree *t1 = (TTree*)(f->Get("t1"));
 
 	// Read the variables from the ROOT tree branches
@@ -208,30 +190,29 @@ int main() {
 	Long64_t nentries = t1->GetEntries();
 	std::cout << "Number of entries: " << nentries << std::endl;
 
-	for (Long64_t jentry=0; jentry<(Long64_t)nentries/100; jentry++)
+	for (Long64_t jentry=0; jentry<(Long64_t)nentries/1; jentry++)
  	{
-		t1->GetEntry(jentry); // Changes the address in address in memory each lep and jet var is refering to
-		std::cout<<"Event "<< jentry <<std::endl;	
+		t1->GetEntry(jentry);
+		std::cout<<"EVENT "<< jentry <<std::endl;	
 
-		//FIX ME
-		std::cout << "   Printing lepton kinematics: " << std::endl;
+		std::cout << "PRINTING LEPTON KINEMATICS: " << std::endl;
 		for (Long64_t ilep=0; ilep<maxLepSize; ilep++) {
 			Lepton lepton = Lepton::FromPtEtaPhiE(lepPt[ilep], lepEta[ilep], lepPhi[ilep], lepE[ilep], lepQ[ilep]);
-			if (lepton.E == 0.0) continue; // skip uninitialized leptons
+			if (lepton.E < 1e-9) continue; // skip uninitialized leptons
 			lepton.print();
-			std::cout << "   Charge: " << lepQ[ilep] << std::endl;
+			std::cout << "Charge: " << lepQ[ilep] << std::endl;
 		}
 
 		std::cout << std::endl;
 
-		std::cout << "   Printing jet kinematics: " << std::endl;
+		std::cout << "PRINTING JET KINEMATICS: " << std::endl;
 		for (Long64_t ijet=0; ijet<maxJetSize; ijet++) {
 			Particle jet = Jet::FromPtEtaPhiE(jetPt[ijet], jetEta[ijet], jetPhi[ijet], jetE[ijet], jetHadronFlavour[ijet]);
-			if (jet.E == 0.0) continue; // skip uninitialized jets
+			if (jet.E < 1e-9) continue; // skip uninitialized jets
 			jet.print();
-			std::cout << "   Hadron Flavor: " << jetHadronFlavour[ijet] << std::endl;
+			std::cout << "Hadron Flavor: " << jetHadronFlavour[ijet] << std::endl;
 		}
-		std::cout << "--------------------------------------------------" << std::endl;
+		std::cout << "---------------------------------------------------------------" << std::endl;
 	} // Loop over all events
 
   	return 0;
