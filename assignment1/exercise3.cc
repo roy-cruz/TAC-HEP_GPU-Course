@@ -1,23 +1,13 @@
 #include <iostream>
 
-int input_rps();
-int play_rps(int plyr1, int plyr2);
-
-int main() {
-    std::cout << "Player 1..." << std::endl;
-    int input1 = input_rps();
-    std::cout << "Player 2..." << std::endl;
-    int input2 = input_rps();
-
-    play_rps(input1, input2);
-
-    return 0;
-}
-
 int input_rps() {
     int choice;
     std::cout << "Enter your choice (0: Scissors, 1: Paper, 2: Rock): ";
     std::cin >> choice;
+    if (choice < 0 || choice > 2) {
+        std::cout << "Invalid choice. Please enter 0, 1, or 2." << std::endl;
+        return input_rps();
+    }
     return choice;
 };
 
@@ -34,5 +24,18 @@ int play_rps(int plyr1, int plyr2) {
         return 0;
     }
     std::cout << "Player 2 wins!" << std::endl;
+    return 0;
+}
+
+int main() {
+    std::cout << "Player 1..." << std::endl;
+    int input1 = input_rps();
+    std::cout << "Player 2..." << std::endl;
+    int input2 = input_rps();
+
+    std::cout << "---------------------" << std::endl;
+    std::cout << "Result:" << std::endl;
+    play_rps(input1, input2);
+
     return 0;
 }
