@@ -7,42 +7,40 @@ struct Student {
     std::string experiment;
 };
 
-void print_student(const Student& student);
+void print_student(const Student& student){
+    std::cout << "Name:       " << student.name << std::endl;
+    std::cout << "Email:      " << student.email << std::endl;
+    std::cout << "User:       " << student.user << std::endl;
+    std::cout << "Experiment: " << student.experiment << std::endl;
+    std::cout << std::endl;
+}
 
 int main() {
     Student student1 = {
-        "Roy", 
+        "Roy F. Cruz", 
         "rfcruz@wisc.edu",
         "rfcruz",
         "CMS"
     };
 
-    Student student2 = {
-        "Jane Doe", 
-        "jdoe@wisc.edu",
-        "jdoe",
-        "ATLAS"
+    Student student3 = {
+        "Jesse Pinkman", 
+        "jpinkman@wisc.edu",
+        "jpinkman",
+        "The Krystal Ship"
     };
 
-    Student student3 = {
-        "John Smith", 
-        "jsmith@wisc.edu",
-        "jsmith",
-        "IceCube"
+    Student student2 = {
+        "Michael Scott", 
+        "mscott@wisc.edu",
+        "mscott",
+        "Dunder Mifflin"
     };
 
     std::cout << "Student Information:" << std::endl;
+    std::cout << "---------------------" << std::endl;
     print_student(student1);
-    std::cout << std::endl;
     print_student(student2);
-    std::cout << std::endl;
     print_student(student3);
     return 0;
-}
-
-void print_student(const Student& student){
-    std::cout << "Name: " << student.name << std::endl;
-    std::cout << "Email: " << student.email << std::endl;
-    std::cout << "User: " << student.user << std::endl;
-    std::cout << "Experiment: " << student.experiment << std::endl;
 }
