@@ -90,13 +90,6 @@ Particle::Particle(Float_t px, Float_t py, Float_t pz, Float_t energy){
 
 }
 
-Particle Particle::FromPtEtaPhiE(Float_t pT, Float_t eta, Float_t phi, Float_t E) {
-	Particle obj;
-	obj.p4(pT, eta, phi, E);
-	return obj;
-}
-
-
 Float_t Particle::sintheta() {
 	Float_t p_magnitude = std::sqrt(p[1]*p[1] + p[2]*p[2] + p[3]*p[3]);
 	Float_t sintheta = pt / p_magnitude;
