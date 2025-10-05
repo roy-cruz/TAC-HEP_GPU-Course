@@ -6,6 +6,7 @@
 \usepackage{indentfirst}
 \usepackage{tcolorbox}
 \usepackage{xcolor}
+\usepackage{amsmath}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -85,8 +86,7 @@
 
 \begin{document}
 
-% \date{March 21, 2023}
-\date{}
+\date{October 5, 2025}
 \maketitle
 
 \begin{exr}{
@@ -96,6 +96,8 @@
     \end{itemize}
     }
 \end{exr}
+
+In this simple implementation, the function \texttt{swap}\_\texttt{vals} takes as input the address of two integer variables, \texttt{a} and \texttt{b} exchange the value of two variables \texttt{a} and \texttt{b} first storing the value of one \texttt{a} in a temporary variable \texttt{temp}. In order to swap the values of two arrays, this function is iteratively applied to each element of two arrays \texttt{A} and \texttt{B} of equal length.
 
 \lstinputlisting[language=C++, caption={\ttfamily{exercise1.cc}}]{../../assignment1/exercise1.cc}
 
@@ -108,6 +110,8 @@
     }
 \end{exr}
 
+For this exercise, a simple \texttt{struct} named \texttt{Student} was defined with elements of type \texttt{std::string} which was used to hold student information. Additionally, a function named \texttt{print\_student} was implemented that takes as input a (constant) \texttt{Student} \texttt{struct} and prints out each of the members. These implementations are used in the main function of the code by instantiating some example \texttt{Student} variables, and then using the \texttt{print\_student} function to print the information they were initialized with.
+
 \lstinputlisting[language=C++, caption={\ttfamily{exercise2.cc}}]{../../assignment1/exercise2.cc}
 
 \begin{exr}{
@@ -116,6 +120,14 @@
     \end{itemize}
     }
 \end{exr}
+
+For this exercise, a simple function called \texttt{input\_rps} (i.e. "input rock, paper, scissor") was implemented which is used twice to prompt the user to input the choice of each player. This information is encoded as integers, with scissors represented by 0, paper by 1, and rock by 2. Another function, \texttt{ play\_rps}, is then called, which takes each player choice as input and, depending on the relative values between the encoded choices, outputs 0 if the result is a draw, 1 if player 1 won or 2 if player 2 won. 
+
+The determination of the winner is based on modular arithmetic. Specifically, player 1 is considered the winner if 
+\begin{equation*}
+    (\text{player 1 choice} + 1) \bmod(3) = \text{player 2 choice} 
+\end{equation*}
+This works due to the cyclic ordering of the choices: scissors (0), paper (1), and rock (2). If the condition holds, player 1's choice beats player 2's. Otherwise, player 2 wins. The result of the game is then printed to then printed.
 
 \lstinputlisting[language=C++, caption={\ttfamily{exercise3.cc}}]{../../assignment1/exercise3.cc}
 
@@ -137,6 +149,35 @@
     \end{itemize}
     }
 \end{exr}
+
+For the \texttt{Particle} class, the implemented constructor takes as input the elements of a 4-vector, i.e. the $\vec p$ and $E$ of the input particle. These values are then stored in the \texttt{p} array and also used to compute and store the energy, mass, $p_T$, $\phi$ and $\eta$ values, the last 4 of which are defined as:
+
+\begin{align*}
+    m &= \sqrt{E^2 - (p_x^2 + p_y^2 + p_z^2)}\\
+    p_T &= \sqrt{p_x^2 + p_y^2}\\
+    \phi &=  \operatorname{atan2}(p_y, p_x)\\
+    \eta &= \frac12 \ln\left(\frac{E + pz}{E - pz}\right)
+\end{align*}
+
+Additionally, two methods, \texttt{Particle::sintheta} and \texttt{Particle::p4}, were implemented. The former, as the name suggests, computes
+
+\begin{align*}
+    \sin\theta = \frac{p_T}{|\vec p|} = \frac{p_T}{\sqrt{p_x^2 + p_y^2 + p_z^2}}
+\end{align*}
+
+\noindent where $\theta$ is the angle between the beamline and the direction of the momentum 3-vector. This computed value is then returned. The second method calculates and stores the components of the 4-vector from the $E$, $p_T$, $\eta$, and $\phi$. The computation for the last three of these is done through the following relationships:
+
+\begin{align}
+    p_x &= p_T \cos\phi\\
+    p_y &= p_T \sin\phi\\
+    p_z &= p_t \sinh\eta
+\end{align}
+
+\noindent Finally, for the \texttt{Particle} base class, the \texttt{Particle::print} method was modified in order to print all of the members of the class, as instructed in the exercise.
+
+Along with the implementation of the required methods for the base class \texttt{Particle}, two sub-classes, \texttt{Jet} and \texttt{Lepton}, were implemented which inherit all of the aforementioned methods and members, but also introduce a new member: \texttt{Q} for \texttt{Lepton} and \texttt{hadronFlav} for \texttt{Jet}. Associated setter methods were included for these members. Furthermore, given that the provided ROOT file for this exercise contain the $\eta$, $\phi$ and $p_T$ of these objects rather than the $\vec p$, a static method \texttt{FromPtEtaPhiE} was implemented in both sub-classes which serves as an alternate constructor class which calls the default \texttt{Particle} constructor, before using the previously implemented \texttt{Particle::p4} method along with the setter method for the corresponding new member of the sub-class (\texttt{Q} or \texttt{hadronFlav}, before returning the fully constructed object.
+
+In the main body of the code, a loop is iterating over each event stored in the provided ROOT file. For each event, we iteratively read each lepton (hadron), storing their kinematic variables and charge (hadron flavor), before printing all of the stored and computed member variables. Uninitialized leptons (jets) in the ROOT file are skipped, and the iterations over the event continued in order to keep the output tidy.
 
 \lstinputlisting[language=C++, caption={\ttfamily{main.cc}}]{../../assignment1/Exercise4/main.cc}
 
