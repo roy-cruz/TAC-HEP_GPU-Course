@@ -51,31 +51,6 @@
     \vspace{1em}
 }{}
 
-\newenvironment{codeblock}[2][]{%
-    \tcbset{listing engine=listings}
-    \begin{tcolorbox}[
-        title=#2,
-        colback=gray!10,
-        colframe=gray!80!black,
-        sharp corners,
-        fontupper=\ttfamily\small,
-        breakable,
-        enhanced,
-        listing only,
-        listing file=#2
-        listing options={
-            language=C++,
-            keywordstyle=\color{blue},
-            commentstyle=\color{green},
-            stringstyle=\color{red},
-            breaklines=true
-        },
-        #1
-    ]
-}{%
-    \end{tcolorbox}
-}
-
 \patchcmd{\thebibliography}{\section*{\refname}}{}{}{}
 
 \title{
@@ -99,7 +74,7 @@ The GitHub repository hosting this code can be found through the following link:
     }
 \end{exr}
 
-The function \texttt{swap}\_\texttt{vals} takes as input the address of two integer variables, \texttt{a} and \texttt{b} exchange the value of two variables \texttt{a} and \texttt{b} first storing the value of one \texttt{a} in a temporary variable \texttt{temp}. In order to swap the values of two arrays, this function is iteratively applied to each element of two arrays \texttt{A} and \texttt{B} of equal length.
+The function \texttt{swap}\_\texttt{vals} takes as input the address of two integer variables, \texttt{a} and \texttt{b}, and exchanges the value of two variables. It does this by first storing the value of \texttt{a} in a temporary variable \texttt{temp}, assigning the value of \texttt{b} to \texttt{a}, and then it assigns the value of the temporary variable to \texttt{b}. In order to swap the values of two arrays, this function is iteratively applied to each element of two arrays \texttt{A} and \texttt{B} of equal length.
 
 \lstinputlisting[language=C++, caption={\ttfamily{exercise1.cc}}]{../../assignment1/exercise1.cc}
 
@@ -112,7 +87,7 @@ The function \texttt{swap}\_\texttt{vals} takes as input the address of two inte
     }
 \end{exr}
 
-For this exercise, a simple \texttt{struct} named \texttt{Student} was defined with elements of type \texttt{std::string} which was used to hold student information. A function named \texttt{print\_student} was also implemented that takes as input a (constant) \texttt{Student} and prints out each of the members of this \texttt{struct}. These implementations are used in the main function of the code by instantiating some example \texttt{Student} variables, and then using the \texttt{print\_student} function to print the information they were initialized with.
+For this exercise, a simple \texttt{struct} named \texttt{Student} was defined with elements of type \texttt{std::string} which was used to hold student information. A function named \texttt{print\_student} was also implemented that takes as input a (constant) \texttt{Student} and prints out each of the members of this \texttt{struct}. These implementations are used in the main function of the code by first instantiating some example \texttt{Student} variables, and then using the \texttt{print\_student} function to print the information they were initialized with.
 
 \lstinputlisting[language=C++, caption={\ttfamily{exercise2.cc}}]{../../assignment1/exercise2.cc}
 
@@ -123,7 +98,7 @@ For this exercise, a simple \texttt{struct} named \texttt{Student} was defined w
     }
 \end{exr}
 
-For this exercise, a simple function called \texttt{input\_rps} (i.e. "input rock, paper, scissor") was implemented which is used twice to prompt the user to input the choice of each player. This information is encoded as integers, with scissors represented by 0, paper by 1, and rock by 2. Another function, \texttt{ play\_rps}, is then called, which takes each player choice as input and, depending on the values between the encoded choices, outputs 0 if the result is a draw, 1 if player 1 won or 2 if player 2 won. 
+For this exercise, a simple function called \texttt{input\_rps} (i.e. "input rock, paper, scissor") was implemented, which is used twice to prompt the user to input the choice of each player. This information is encoded as integers, with scissors represented by 0, paper by 1, and rock by 2. Another function, \texttt{ play\_rps}, is then called, which takes each player choice as input and, depending on the values between the encoded choices, outputs 0 if the result is a draw, 1 if player 1 won or 2 if player 2 won. 
 
 The determination of the winner is based on modular arithmetic. If the choices are the same then its considered a draw. On the other hand, player 1 is considered the winner if
 \begin{equation*}
@@ -172,7 +147,7 @@ Additionally, two methods, \texttt{Particle::sintheta} and \texttt{Particle::p4}
 \begin{align*}
     p_x &= p_T \cos\phi\\
     p_y &= p_T \sin\phi\\
-    p_z &= p_t \sinh\eta
+    p_z &= p_T \sinh\eta
 \end{align*}
 
 \noindent Finally, for the \texttt{Particle} base class, the \texttt{Particle::print} method was modified in order to print all of the members of the base class, as instructed in the exercise.
