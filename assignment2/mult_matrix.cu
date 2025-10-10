@@ -5,6 +5,7 @@ const int DSIZE = 256;
 const int NELEMS = DSIZE*DSIZE;
 const float A_val = 3.0f;
 const float B_val = 2.0f;
+const int PRINTSIZE = 3; // Number of rows and columns to print
 
 // error checking macro
 #define cudaCheckErrors(msg)                                   \
@@ -36,8 +37,6 @@ __host__ void matrix_mul_cpu(const float *A, const float *B, float *C, int size)
 
 // Square matrix multiplication on GPU : C = A * B
 __global__ void matrix_mul_gpu(const float *A, const float *B, float *C, int size) {
-
-    //FIXME:
     // create thread x index
     // create thread y index
     int idx = threadIdx.x + blockDim.x * blockIdx.x; // x = j
@@ -95,21 +94,23 @@ int main() {
     printf("Init took %f seconds.  Begin compute\n", t_init);
 
     printf("Matrix A\n");
-    print_mtrx(h_A, 10, 10);
+    print_mtrx(h_A, PRINTSIZE, PRINTSIZE);
     printf("Matrix B\n");
-    print_mtrx(h_B, 10, 10);
+    print_mtrx(h_B, PRINTSIZE, PRINTSIZE);
     printf("Matrix C before multiplication\n");
-    print_mtrx(h_C, 10, 10);
+    print_mtrx(h_C, PRINTSIZE, PRINTSIZE);
 
     t_cudaAll_start = clock();
     // Allocate device memory and copy input data from host to device
     cudaMalloc(&d_A, NELEMS*sizeof(float));
     cudaMalloc(&d_B, NELEMS*sizeof(float));
     cudaMalloc(&d_C, NELEMS*sizeof(float));
-    //FIXME:Add all other allocations and copies from host to device
+    cudaCheckErrors("cudaMalloc failure");
+
     cudaMemcpy(d_A, h_A, NELEMS*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_B, h_B, NELEMS*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_C, h_C, NELEMS*sizeof(float), cudaMemcpyHostToDevice);
+    cudaCheckErrors("cudaMemcpy (h->d) failure");
 
     // Launch kernel
     // Specify the block and grid dimentions 
@@ -119,10 +120,12 @@ int main() {
 
     t_cuda_start = clock();
     matrix_mul_gpu<<<grid, block>>>(d_A, d_B, d_C, DSIZE);
+    cudaCheckErrors("kernel launch failure");
     t_cuda_end = clock();
 
     // Copy results back to host
     cudaMemcpy(h_C, d_C, NELEMS*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaCheckErrors("cudaMemcpy (d->h) failure");
 
     // GPU timing
     t_cudaAll_end = clock();
@@ -134,7 +137,7 @@ int main() {
     printf("Time for compute with memory allocation and copy: %f seconds\n", t_cudaAll);
     printf("Time for compute without memory allocation and copy: %f seconds\n", t_cuda);
     printf("Matrix C after multiplication w/ GPU\n");
-    print_mtrx(h_C, 10, 10);
+    print_mtrx(h_C, PRINTSIZE, PRINTSIZE);
 
     // Re-initialize matrix C to 0
     for (int i = 0; i < NELEMS; i++){
@@ -152,7 +155,7 @@ int main() {
     printf("CPU:\n");
     printf ("Done. Compute took %f seconds\n", t_cpu);
     printf("Matrix C after multiplication w/ CPU\n");
-    print_mtrx(h_C, 10, 10);
+    print_mtrx(h_C, PRINTSIZE, PRINTSIZE);
 
     // Free memory
     free(h_A);
