@@ -36,11 +36,8 @@ __host__ void matrix_mul_cpu(const float *A, const float *B, float *C, int size)
 
 // Square matrix multiplication on GPU : C = A * B
 __global__ void matrix_mul_gpu(const float *A, const float *B, float *C, int size) {
-    // create thread x index
-    // create thread y index
     int idx = threadIdx.x + blockDim.x * blockIdx.x; // x = j
     int idy = threadIdx.y + blockDim.y * blockIdx.y; // y = i
-    // Make sure we are not out of range
     if ((idx < size) && (idy < size)) {
         float temp = 0;
         for (int k = 0; k < size; k++){

@@ -3,7 +3,7 @@
 const int DSIZE_X = 256;
 const int DSIZE_Y = 256;
 const int NELEMS = DSIZE_X * DSIZE_Y;
-const int PRINTSIZE = 3; // Number of rows and columns to print
+const int PRINTSIZE = 3;
 
 __global__ void add_matrix(float *A, float *B, float *C, int width, int height) {
 
