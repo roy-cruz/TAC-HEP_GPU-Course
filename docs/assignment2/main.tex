@@ -23,7 +23,7 @@
              { }{{\ }}1
 }
 \lstdefinestyle{mystyle}{
-    % backgroundcolor=\color{backcolour},   
+    backgroundcolor=\color{backcolour},   
     commentstyle=\color{codegreen},
     keywordstyle=\color{magenta},
     numberstyle=\tiny\color{codegray},
@@ -41,6 +41,15 @@
     tabsize=2
 }
 \lstset{style=mystyle}
+
+\lstdefinestyle{outputstyle}{
+    backgroundcolor=\color{gray!10},
+    basicstyle=\ttfamily\footnotesize,
+    frame=single,
+    breaklines=true,
+    showstringspaces=false,
+    numbers=none
+}
 
 \newcounter{exercise}
 \newenvironment{exr}[1]{%
@@ -78,7 +87,6 @@ The GitHub repository hosting this code can be found through the following link:
 
 \lstinputlisting[language=C++, caption={\ttfamily{add\_matrix.cu}}]{../../assignment2/add_matrix.cu}
 
-
 % ------------------------------------------------------------------------
 
 
@@ -104,6 +112,13 @@ The GitHub repository hosting this code can be found through the following link:
 \lstinputlisting[language=C++, caption={\ttfamily{add\_matrix.cu}}]{../../assignment2/add_matrix.cu}
 
 
+\begin{out}
+Some elements of the arrays before swapping
+A = 0.840188, 0.783099, 0.911647, 0.335223, 
+B = 0.394383, 0.798440, 0.197551, 0.768230, 
+Some elements of the arrays after swapping
+A = 0.394383, 0.798440, 0.197551, 0.768230, 
+\end{out}
 
 % ------------------------------------------------------------------------
 
