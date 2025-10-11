@@ -5,7 +5,7 @@ const int DSIZE = 256;
 const int NELEMS = DSIZE*DSIZE;
 const float A_val = 3.0f;
 const float B_val = 2.0f;
-const int PRINTSIZE = 3; // Number of rows and columns to print
+const int PRINTSIZE = 3;
 
 // error checking macro
 #define cudaCheckErrors(msg)                                   \
@@ -20,9 +20,8 @@ const int PRINTSIZE = 3; // Number of rows and columns to print
        }                                                       \
    } while (0)
 
-   // Square matrix multiplication on CPU : C = A * B
+
 __host__ void matrix_mul_cpu(const float *A, const float *B, float *C, int size) {
-    //FIXME:
     int summation = 0;
     for (int i=0; i<DSIZE; i++) {
         for (int j=0; j<DSIZE; j++) {
@@ -30,7 +29,7 @@ __host__ void matrix_mul_cpu(const float *A, const float *B, float *C, int size)
             for (int k=0; k<DSIZE; k++) {
                 summation += A[i + k * DSIZE] * B[k + j * DSIZE];
             }
-            C[i + j * DSIZE] = summation;
+            C[i * DSIZE + j] = summation;
         }
     }
 }
@@ -68,17 +67,12 @@ int main() {
 
     float *h_A, *h_B, *h_C, *d_A, *d_B, *d_C;
 
-    // These are used for timing
-    clock_t t_init_start, t_init_end, t_cuda_start, t_cuda_end, t_cudaAll_start, t_cudaAll_end, t_cpu_start, t_cpu_end;
-    double t_init=0.0;
+    // Timing variables
+    clock_t t_cuda_start, t_cuda_end, t_cpu_start, t_cpu_end;
     double t_cuda=0.0;
-    double t_cudaAll = 0.0;
     double t_cpu=0.0;
 
-    // Initialization timing
-    t_init_start = clock();
-
-    // N*N matrices defined in 1 dimention
+    // N*N matrices defined in 1 dimension
     h_A = new float[NELEMS];
     h_B = new float[NELEMS];
     h_C = new float[NELEMS];
@@ -88,56 +82,46 @@ int main() {
         h_C[i] = 0;
     }
 
-    // Initialization timing end
-    t_init_end = clock();
-    t_init = ((double)(t_init_end-t_init_start))/CLOCKS_PER_SEC;
-    printf("Init took %f seconds.  Begin compute\n", t_init);
-
-    printf("Matrix A\n");
+    printf("A (%d x %d):\n", DSIZE, DSIZE);
     print_mtrx(h_A, PRINTSIZE, PRINTSIZE);
-    printf("Matrix B\n");
+    printf("B (%d x %d):\n", DSIZE, DSIZE);
     print_mtrx(h_B, PRINTSIZE, PRINTSIZE);
-    printf("Matrix C before multiplication\n");
-    print_mtrx(h_C, PRINTSIZE, PRINTSIZE);
+    printf("==============\n\n");
 
-    t_cudaAll_start = clock();
-    // Allocate device memory and copy input data from host to device
     cudaMalloc(&d_A, NELEMS*sizeof(float));
     cudaMalloc(&d_B, NELEMS*sizeof(float));
     cudaMalloc(&d_C, NELEMS*sizeof(float));
     cudaCheckErrors("cudaMalloc failure");
-
     cudaMemcpy(d_A, h_A, NELEMS*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_B, h_B, NELEMS*sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_C, h_C, NELEMS*sizeof(float), cudaMemcpyHostToDevice);
     cudaCheckErrors("cudaMemcpy (h->d) failure");
 
     // Launch kernel
-    // Specify the block and grid dimentions 
-    dim3 block(16, 16);  //FIXME
-    dim3 grid((DSIZE + block.x - 1)/block.x,
-              (DSIZE + block.y - 1)/block.y); //FIXME
+    dim3 block(16, 16);
+    dim3 grid(
+        (DSIZE + block.x - 1)/block.x,
+        (DSIZE + block.y - 1)/block.y
+    );
 
+    // GPU timing start (excluding memory allocation and copy)
     t_cuda_start = clock();
     matrix_mul_gpu<<<grid, block>>>(d_A, d_B, d_C, DSIZE);
-    cudaCheckErrors("kernel launch failure");
     t_cuda_end = clock();
+    cudaCheckErrors("kernel launch failure");
 
     // Copy results back to host
     cudaMemcpy(h_C, d_C, NELEMS*sizeof(float), cudaMemcpyDeviceToHost);
     cudaCheckErrors("cudaMemcpy (d->h) failure");
 
     // GPU timing
-    t_cudaAll_end = clock();
-
     t_cuda = ((double)(t_cuda_end - t_cuda_start))/CLOCKS_PER_SEC;
-    t_cudaAll = ((double)(t_cudaAll_end - t_cudaAll_start))/CLOCKS_PER_SEC;
 
     printf("GPU:\n");
-    printf("Time for compute with memory allocation and copy: %f seconds\n", t_cudaAll);
-    printf("Time for compute without memory allocation and copy: %f seconds\n", t_cuda);
-    printf("Matrix C after multiplication w/ GPU\n");
+    printf("Time for compute: %f seconds\n", t_cuda);
+    printf("GPU Result for C = A * B (%d x %d):\n", DSIZE, DSIZE);
     print_mtrx(h_C, PRINTSIZE, PRINTSIZE);
+    printf("==============\n\n");
 
     // Re-initialize matrix C to 0
     for (int i = 0; i < NELEMS; i++){
@@ -146,15 +130,13 @@ int main() {
 
     // CPU timing start
     t_cpu_start = clock();
-    // Excecute and time the cpu matrix multiplication function
     matrix_mul_cpu(h_A, h_B, h_C, DSIZE);
-    // CPU timing
     t_cpu_end = clock();
 
     t_cpu = ((double)(t_cpu_end-t_cpu_start))/CLOCKS_PER_SEC;
     printf("CPU:\n");
-    printf ("Done. Compute took %f seconds\n", t_cpu);
-    printf("Matrix C after multiplication w/ CPU\n");
+    printf("Time for compute: %f seconds\n", t_cpu);
+    printf("CPU Result for C = A * B (%d x %d):\n", DSIZE, DSIZE);
     print_mtrx(h_C, PRINTSIZE, PRINTSIZE);
 
     // Free memory
