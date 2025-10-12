@@ -79,7 +79,7 @@
 \date{October 12, 2025}
 \maketitle
 
-The GitHub repository hosting this code can be found through the following link: \href{https://github.com/roy-cruz/TAC-HEP_GPU-Course_Assignments/tree/master}{link}
+The GitHub repository that hosts this code can be accessed via the following link: \href{https://github.com/roy-cruz/TAC-HEP_GPU-Course_Assignments/tree/master}{link}
 
 \begin{exr}{
     \begin{itemize}
@@ -197,6 +197,7 @@ Both functions, \texttt{matrix\_mul\_gpu} and \texttt{matrix\_mul\_cpu}, were ti
 \lstinputlisting[caption={\texttt{mult\_matrix.cu}}, style=code]{../../assignment2/mult_matrix.cu}
 
 \begin{lstlisting}[style=output]
+[rcruzcan@g37n01 assignment2]$ nvcc mult_matrix.cu -o objs/mult_matrix
 [rcruzcan@g37n01 assignment2]$ ./objs/mult_matrix
 A (256 x 256):
 3.000000, 3.000000, 3.000000, 
