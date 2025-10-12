@@ -37,7 +37,7 @@ int main() {
     }
 
     // Print initial arrays
-    printf("Some elements of the arrays before swapping\n");
+    printf("First 4 elements of the arrays before swapping\n");
     printf("A = ");
     print_array(h_A, PRINTSIZE); // Print first 4 elements
     printf("B = ");
@@ -59,7 +59,7 @@ int main() {
     cudaMemcpy(h_B, d_B, DSIZE*sizeof(float), cudaMemcpyDeviceToHost);
 
     // Print and check some elements to make sure swapping was successful
-    printf("Some elements of the arrays after swapping\n");
+    printf("First 4 elements of the arrays after swapping\n");
     printf("A = ");
     print_array(h_A, PRINTSIZE); // Print first 4 elements
     printf("B = ");
