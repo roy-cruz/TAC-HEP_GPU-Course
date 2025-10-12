@@ -22,7 +22,7 @@
              {~}{{\texttt{~}}}1
              { }{{\ }}1
 }
-\lstdefinestyle{mystyle}{
+\lstdefinestyle{code}{
     backgroundcolor=\color{backcolour},   
     commentstyle=\color{codegreen},
     keywordstyle=\color{magenta},
@@ -38,18 +38,24 @@
     showspaces=false,                
     showstringspaces=false,
     showtabs=false,                  
-    tabsize=2
+    tabsize=2,
+    language=C++
 }
-\lstset{style=mystyle}
 
-\lstdefinestyle{outputstyle}{
-    backgroundcolor=\color{gray!10},
-    basicstyle=\ttfamily\footnotesize,
-    frame=single,
+\lstdefinestyle{output}{
+    backgroundcolor=\color{black!5},
+    basicstyle=\ttfamily\small,
     breaklines=true,
     showstringspaces=false,
-    numbers=none
+    frame=single,
+    rulecolor=\color{black!20},
+    numbers=none,
+    captionpos=t,
+    language=bash
 }
+
+\renewcommand{\lstlistingname}{Code block}
+
 
 \newcounter{exercise}
 \newenvironment{exr}[1]{%
@@ -85,7 +91,22 @@ The GitHub repository hosting this code can be found through the following link:
 
 The kernel in this implementation works by first using a temporary variable, \texttt{temp}, to store the element of \texttt{A} located at index \texttt{idx = threadIdx.x + blockDim.x * blockIdx.x}. It then replaces that element in \texttt{A} with the corresponding element from \texttt{B} at the same index. Finally, the value stored in \texttt{temp} is written back into \texttt{B} at that same position, effectively swapping the two elements. By ensuring that only threads with \texttt{idx < n\_elements} are executed, the kernel guarantees that each valid pair of elements between the two arrays is swapped exactly once and that no out-of-bounds memory access occurs.
 
-\lstinputlisting[language=C++, caption={\ttfamily{swap\_vectors.cu}}]{../../assignment2/swap_vectors.cu}
+\lstinputlisting[caption={\texttt{swap\_vectors.cu}}, style=code]{../../assignment2/swap_vectors.cu}
+
+\begin{lstlisting}[style=output]
+[rcruzcan@g37n01 assignment2]$ nvcc swap_vectors.cu -o objs/swap_vectors
+[rcruzcan@g37n01 assignment2]$ ./objs/swap_vectors 
+First 4 elements of the arrays before swapping
+A = 0.840188, 0.783099, 0.911647, 0.335223, 
+B = 0.394383, 0.798440, 0.197551, 0.768230, 
+
+==============
+
+First 4 elements of the arrays after swapping
+A = 0.394383, 0.798440, 0.197551, 0.768230, 
+B = 0.840188, 0.783099, 0.911647, 0.335223, 
+\end{lstlisting}
+
 
 % ------------------------------------------------------------------------
 
@@ -109,9 +130,28 @@ The kernel in this implementation works by first using a temporary variable, \te
 
 The matrix addition kernel works by using each thread’s pair of indices within the grid of thread blocks to determine the corresponding element in the matrices. Since the matrices are stored as one-dimensional arrays of length \texttt{DSIZE\_X * DSIZE\_Y}, each element is accessed using a flattened index \texttt{idx + width * idy}. For threads whose \texttt{x} and \texttt{y} indices fall within the matrix dimensions (i.e., less than the width and height, respectively), the kernel computes the sum of the elements from \texttt{A} and \texttt{B} at that position and stores the result in the corresponding element of \texttt{C}.
 
-\lstinputlisting[language=C++, caption={\ttfamily{add\_matrix.cu}}]{../../assignment2/add_matrix.cu}
+\lstinputlisting[caption={\ttfamily{add\_matrix.cu}}, style=code]{../../assignment2/add_matrix.cu}
 
+\begin{lstlisting}[style=output]
+[rcruzcan@g37n01 assignment2]$ nvcc add_matrix.cu -o objs/add_matrix
+[rcruzcan@g37n01 assignment2]$ ./objs/add_matrix
+A:
+0.840188, 0.783099, 0.911647, 
+0.335223, 0.277775, 0.477397, 
+0.364784, 0.952230, 0.635712, 
 
+B:
+0.394383, 0.798440, 0.197551, 
+0.768230, 0.553970, 0.628871, 
+0.513401, 0.916195, 0.717297, 
+
+==============
+
+C = A + B:
+1.234571, 1.581539, 1.109199, 
+1.103452, 0.831745, 1.106268, 
+0.878185, 1.868425, 1.353009, 
+\end{lstlisting}
 
 % ------------------------------------------------------------------------
 
@@ -148,12 +188,43 @@ Since the matrices in this exercise are also represented as flat arrays, the ker
     C_{ij} = \sum_{k=0}^N A_{ik}B_{kj}
 \end{align*}
 
-\noindent Thus, in the implemented kernel \texttt{matrix\_mul\_gpu}, the element with index \texttt{idy * size + idx} of the result matrix \texttt{C} is assigned the value of summing \texttt{A[idy * size + k] * B[k * size + idx]} along \texttt{k} in a loop. Each thread for which their indices in \texttt{x} and \texttt{y} fall inside the matrix dimensions perform this operation.
+\noindent In the implemented kernel \texttt{matrix\_mul\_gpu}, each thread computes one element of the result matrix \texttt{C}. Specifically, the element at index \texttt{idy * size + idx} is assigned the value obtained by summing \texttt{A[idy * size + k] * B[k * size + idx]} over all \texttt{k} in a loop. This operation is performed by every thread whose \texttt{x} and \texttt{y} indices fall within the matrix dimensions.
 
-The non-GPU implementation of this, \texttt{matrix\_mul\_cpu}, takes a similar approach. However, there are two additional loops that are performed that serially iterate over both indices of the \texttt{C} array.
+The non-GPU version, \texttt{matrix\_mul\_cpu}, follows the same computational logic but performs the operation serially using three nested loops that iterate over the indices of the \texttt{C} array.
 
-The calls to \texttt{matrix\_mul\_gpu} and \texttt{matrix\_mul\_cpu} were timed, and it was found that the matrix 
+Both functions, \texttt{matrix\_mul\_gpu} and \texttt{matrix\_mul\_cpu}, were timed to compare their execution performance. The results for a representative run are shown in the output section below. In all tests, the GPU implementation was approximately 2.5 orders of magnitude faster than the CPU implementation.
 
-\lstinputlisting[language=C++, caption={\texttt{mult\_matrix.cu}}]{../../assignment2/mult_matrix.cu}
+\lstinputlisting[caption={\texttt{mult\_matrix.cu}}, style=code]{../../assignment2/mult_matrix.cu}
+
+\begin{lstlisting}[style=output]
+[rcruzcan@g37n01 assignment2]$ ./objs/mult_matrix
+A (256 x 256):
+3.000000, 3.000000, 3.000000, 
+3.000000, 3.000000, 3.000000, 
+3.000000, 3.000000, 3.000000, 
+
+B (256 x 256):
+2.000000, 2.000000, 2.000000, 
+2.000000, 2.000000, 2.000000, 
+2.000000, 2.000000, 2.000000, 
+
+==============
+
+GPU:
+Time for compute: 0.000318 seconds
+GPU Result for C = A * B (256 x 256):
+1536.000000, 1536.000000, 1536.000000, 
+1536.000000, 1536.000000, 1536.000000, 
+1536.000000, 1536.000000, 1536.000000, 
+
+==============
+
+CPU:
+Time for compute: 0.099214 seconds
+CPU Result for C = A * B (256 x 256):
+1536.000000, 1536.000000, 1536.000000, 
+1536.000000, 1536.000000, 1536.000000, 
+1536.000000, 1536.000000, 1536.000000, 
+\end{lstlisting}
 
 \end{document}
