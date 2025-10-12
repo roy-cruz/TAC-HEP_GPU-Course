@@ -89,7 +89,7 @@ The GitHub repository that hosts this code can be accessed via the following lin
     }
 \end{exr}
 
-The kernel in this implementation works by first using a temporary variable, \texttt{temp}, to store the element of \texttt{A} located at index \texttt{idx = threadIdx.x + blockDim.x * blockIdx.x}. It then replaces that element in \texttt{A} with the corresponding element from \texttt{B} at the same index. Finally, the value stored in \texttt{temp} is written back into \texttt{B} at that same position, effectively swapping the two elements. By ensuring that only threads with \texttt{idx < n\_elements} are executed, the kernel guarantees that each valid pair of elements between the two arrays is swapped exactly once and that no out-of-bounds memory access occurs.
+The kernel in this implementation works by first using a temporary variable, \texttt{temp}, to store the element of \texttt{A} located at index \texttt{idx = threadIdx.x + blockDim.x * blockIdx.x}. It then replaces that element in \texttt{A} with the corresponding element from \texttt{B} at the same index. Finally, the value stored in \texttt{temp} is written back into \texttt{B} at that same position, effectively swapping the two elements. By ensuring that only threads with \texttt{idx < n\_elements} are executed, the kernel guarantees that no out-of-bounds memory access occurs.
 
 \lstinputlisting[caption={\texttt{swap\_vectors.cu}}, style=code]{../../assignment2/swap_vectors.cu}
 
