@@ -83,9 +83,9 @@ The GitHub repository hosting this code can be found through the following link:
     }
 \end{exr}
 
-...
+The kernel in this implementation works by first using a temporary variable, \texttt{temp}, to store the element of \texttt{A} located at index \texttt{idx = threadIdx.x + blockDim.x * blockIdx.x}. It then replaces that element in \texttt{A} with the corresponding element from \texttt{B} at the same index. Finally, the value stored in \texttt{temp} is written back into \texttt{B} at that same position, effectively swapping the two elements. By ensuring that only threads with \texttt{idx < n\_elements} are executed, the kernel guarantees that each valid pair of elements between the two arrays is swapped exactly once and that no out-of-bounds memory access occurs.
 
-\lstinputlisting[language=C++, caption={\ttfamily{add\_matrix.cu}}]{../../assignment2/add_matrix.cu}
+\lstinputlisting[language=C++, caption={\ttfamily{swap\_vectors.cu}}]{../../assignment2/swap_vectors.cu}
 
 % ------------------------------------------------------------------------
 
@@ -107,18 +107,11 @@ The GitHub repository hosting this code can be found through the following link:
     \end{itemize}   
 }\end{exr}
 
-...
+The matrix addition kernel works by using each thread’s pair of indices within the grid of thread blocks to determine the corresponding element in the matrices. Since the matrices are stored as one-dimensional arrays of length \texttt{DSIZE\_X * DSIZE\_Y}, each element is accessed using a flattened index \texttt{idx + width * idy}. For threads whose \texttt{x} and \texttt{y} indices fall within the matrix dimensions (i.e., less than the width and height, respectively), the kernel computes the sum of the elements from \texttt{A} and \texttt{B} at that position and stores the result in the corresponding element of \texttt{C}.
 
 \lstinputlisting[language=C++, caption={\ttfamily{add\_matrix.cu}}]{../../assignment2/add_matrix.cu}
 
 
-\begin{out}
-Some elements of the arrays before swapping
-A = 0.840188, 0.783099, 0.911647, 0.335223, 
-B = 0.394383, 0.798440, 0.197551, 0.768230, 
-Some elements of the arrays after swapping
-A = 0.394383, 0.798440, 0.197551, 0.768230, 
-\end{out}
 
 % ------------------------------------------------------------------------
 
@@ -149,7 +142,17 @@ A = 0.394383, 0.798440, 0.197551, 0.768230,
     \end{itemize}
 }\end{exr}
 
-...
+Since the matrices in this exercise are also represented as flat arrays, the kernel implemented takes the same approach towards accessing the elements of the matrices that was used in the previous exercise. For two square matrices $A$ and $B$ of size $N$, the element $C_{ij}$ of $C = A\times B$ is given by:
+
+\begin{align*}
+    C_{ij} = \sum_{k=0}^N A_{ik}B_{kj}
+\end{align*}
+
+\noindent Thus, in the implemented kernel \texttt{matrix\_mul\_gpu}, the element with index \texttt{idy * size + idx} of the result matrix \texttt{C} is assigned the value of summing \texttt{A[idy * size + k] * B[k * size + idx]} along \texttt{k} in a loop. Each thread for which their indices in \texttt{x} and \texttt{y} fall inside the matrix dimensions perform this operation.
+
+The non-GPU implementation of this, \texttt{matrix\_mul\_cpu}, takes a similar approach. However, there are two additional loops that are performed that serially iterate over both indices of the \texttt{C} array.
+
+The calls to \texttt{matrix\_mul\_gpu} and \texttt{matrix\_mul\_cpu} were timed, and it was found that the matrix 
 
 \lstinputlisting[language=C++, caption={\texttt{mult\_matrix.cu}}]{../../assignment2/mult_matrix.cu}
 
