@@ -104,6 +104,8 @@ int main() {
     // GPU timing start (excluding memory allocation and copy)
     t_cuda_start = clock();
     matrix_mul_gpu<<<grid, block>>>(d_A, d_B, d_C, DSIZE);
+    // Wait for all threads to finish for accurate timing
+    cudaDeviceSynchronize();
     t_cuda_end = clock();
     cudaCheckErrors("kernel launch failure");
 
