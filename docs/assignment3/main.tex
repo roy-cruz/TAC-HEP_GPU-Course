@@ -1,0 +1,120 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\usepackage{listings}
+\lstset{language=C++}
+\lstset{breaklines=true}
+\lstset{
+    literate={"}{{\texttt{"}}}1
+             {'}{{\texttt{'}}}1
+             {~}{{\texttt{~}}}1
+             { }{{\ }}1
+}
+\lstdefinestyle{code}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=t,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C++
+}
+
+\lstdefinestyle{output}{
+    backgroundcolor=\color{black!5},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{black!20},
+    numbers=none,
+    captionpos=t,
+    language=bash
+}
+
+\renewcommand{\lstlistingname}{Code block}
+
+
+\newcounter{exercise}
+\newenvironment{exr}[1]{%
+    \refstepcounter{exercise}
+    \begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Exercise \theexercise]
+    \textbf{Instructions:} #1
+    \end{tcolorbox}
+    \vspace{1em}
+}{}
+
+\patchcmd{\thebibliography}{\section*{\refname}}{}{}{}
+
+\title{
+    TAC-HEP GPU Programming Training Module: Assignment 3
+}
+
+\author{Roy F. Cruz}
+
+\begin{document}
+
+\date{October 26, 2025}
+\maketitle
+
+The GitHub repository that hosts this code can be accessed via the following link: \href{https://github.com/roy-cruz/TAC-HEP_GPU-Course_Assignments/tree/master}{link}
+
+\begin{exr}{
+    \begin{itemize}
+        \item Calculate the dot product of two vectors of size N using \texttt{atomicAdd()}.
+        \item Start from file \texttt{dot\_product.cu}.
+    \end{itemize}
+    }
+\end{exr}
+
+...
+
+\lstinputlisting[caption={\texttt{swap\_vectors.cu}}, style=code]{../../assignment3/dot_product.cu}
+
+\begin{lstlisting}[style=output]
+...
+\end{lstlisting}
+
+
+% ------------------------------------------------------------------------
+
+
+\begin{exr}{
+    \begin{itemize}
+        \item Apply a 2-D stencil of radius \texttt{RADIUS} on a 2-D square matrix of size \texttt{DSIZE * DSIZE}. 
+        \item Make use of shared memory. Remember to also load into shared memory the halo elements of the matrix.
+        \item Start from file \texttt{stencil\_2d.cu}.
+    \end{itemize}   
+}\end{exr}
+
+...
+
+\lstinputlisting[caption={\ttfamily{add\_matrix.cu}}, style=code]{../../assignment3/stencil_2d.cu}
+
+\begin{lstlisting}[style=output]
+...
+\end{lstlisting}
+
+\end{document}
