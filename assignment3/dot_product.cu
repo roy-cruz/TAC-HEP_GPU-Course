@@ -51,9 +51,9 @@ int main() {
 	}
 	*h_C = 0;
 
-	printf("A:\n");
+	printf("A (first %d elements out of %d):\n", 10, DSIZE);
 	print_array(h_A, 10);
-	printf("B:\n");
+	printf("B (first %d elements out of %d):\n", 10, DSIZE);
 	print_array(h_B, 10);
 	printf("\n");
 	

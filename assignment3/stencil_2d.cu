@@ -22,13 +22,13 @@ __global__ void stencil_2d(int *in, int *out) {
 	temp[lindex_x][lindex_y] = in[gindex_x * size + gindex_y];
 
 	if (threadIdx.x < RADIUS) {
-		temp[lindex_x - RADIUS		][lindex_y				] = in[(gindex_x - RADIUS) * size + gindex_y		];
-		temp[lindex_x + BLOCK_SIZE	][lindex_y				] = in[(gindex_x + BLOCK_SIZE) * size + gindex_y	];
+		temp[lindex_x - RADIUS][lindex_y] = in[(gindex_x - RADIUS) * size + gindex_y];
+		temp[lindex_x + BLOCK_SIZE][lindex_y] = in[(gindex_x + BLOCK_SIZE) * size + gindex_y];
 	}
 
 	if (threadIdx.y < RADIUS ) {
-		temp[lindex_x				][lindex_y - RADIUS		] = in[gindex_x * size + (gindex_y - RADIUS)		];
-		temp[lindex_x				][lindex_y + BLOCK_SIZE	] = in[gindex_x * size + (gindex_y + BLOCK_SIZE)	];
+		temp[lindex_x][lindex_y - RADIUS] = in[gindex_x * size + (gindex_y - RADIUS)];
+		temp[lindex_x][lindex_y + BLOCK_SIZE] = in[gindex_x * size + (gindex_y + BLOCK_SIZE)];
 	}
 
 	__syncthreads();
@@ -63,7 +63,7 @@ int main(void) {
 	int size = (N + 2*RADIUS)*(N + 2*RADIUS) * sizeof(int);
 	in = (int *)malloc(size); fill_ints(in, (N + 2*RADIUS)*(N + 2*RADIUS));
 	out = (int *)malloc(size); fill_ints(out, (N + 2*RADIUS)*(N + 2*RADIUS));
-
+	
 	// Alloc space for device copies
 	cudaMalloc((void **)&d_in, size);
 	cudaMalloc((void **)&d_out, size);
