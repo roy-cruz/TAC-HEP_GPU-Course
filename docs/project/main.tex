@@ -1,0 +1,194 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{tcolorbox}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\usepackage{listings}
+\lstset{language=C++}
+\lstset{breaklines=true}
+\lstset{
+    literate={"}{{\texttt{"}}}1
+             {'}{{\texttt{'}}}1
+             {~}{{\texttt{~}}}1
+             { }{{\ }}1
+}
+\lstdefinestyle{code}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=t,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C++
+}
+
+\lstdefinestyle{output}{
+    backgroundcolor=\color{black!5},
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    showstringspaces=false,
+    frame=single,
+    rulecolor=\color{black!20},
+    numbers=none,
+    captionpos=t,
+    language=bash
+}
+
+\renewcommand{\lstlistingname}{Code block}
+
+
+\newcounter{exercise}
+\newenvironment{exr}[1]{%
+    \refstepcounter{exercise}
+    \begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Exercise \theexercise]
+    \textbf{Instructions:} #1
+    \end{tcolorbox}
+    \vspace{1em}
+}{}
+
+\patchcmd{\thebibliography}{\section*{\refname}}{}{}{}
+
+\title{
+    TAC-HEP GPU Programming Training Module: Final project
+}
+
+\author{Roy F. Cruz}
+
+\begin{document}
+
+\date{December 11, 2025}
+\maketitle
+
+The GitHub repository that hosts this code can be accessed via the following link: \href{https://github.com/roy-cruz/TAC-HEP_GPU-Course_Assignments/tree/master}{link}
+
+
+\section{C++ and CPU Profiling}
+\begin{exr}{
+    \begin{itemize}
+        \item Start by writing a code in C++ that:
+        \begin{itemize}
+            \item Creates two 2-dimensional square matrices \texttt{A} and \texttt{B} of size \texttt{DSIZE >= 512}   and fills them with arbitrary integer values.
+            \item Performs a 2-dimensional stencil operation on each matrix. You can use any radius size, but keep it \texttt{> 2}.
+            \item Performs a matrix multiplication of the matrices after the stencil application.
+            \item Make sure that you also add utility functions to check your results.
+        \end{itemize}
+        \item Profile your C++ code using the VTune profiler and identify the compute intensive parts.
+    \end{itemize}
+    }
+\end{exr}
+
+Hello
+
+% In this code, we take the dot product of two arrays. Firstly, it allocates the required memory in both the host and device, and passes the arrays \texttt{A} and \texttt{B} (all elements initialized to 1) and the result \texttt{int} variable C (initialized to 0) from host to device memory. Then the kernel \texttt{dot\_product} is called which computes the dot product:
+
+% \begin{align*}
+%     C = \vec A \cdot \vec B = \sum_{i}A_iB_i
+% \end{align*}
+
+% \noindent In the kernel, each thread computes a single term in the above sum and adds it to \texttt{C}. This summation is done using \texttt{atomicAdd} in order to avoid a race condition. The result of these operations is then passed to the host device and the result is printed.
+
+% \lstinputlisting[caption={\texttt{dot\_product.cu}}, style=code]{../../assignment3/dot_product.cu}
+
+% \begin{lstlisting}[style=output]
+% [rcruzcan@cmsgpu01 assignment3]$ nvcc dot_product.cu -o ./objs/dot_product 
+% [rcruzcan@cmsgpu01 assignment3]$ ./objs/dot_product 
+% A (first 10 elements out of 256):
+% 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+% B (first 10 elements out of 256):
+% 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+
+% Dot Product: 256
+% \end{lstlisting}
+
+
+% ------------------------------------------------------------------------
+
+\section{Porting to CUDA}
+\begin{exr}{
+    \begin{itemize}
+        \item Write the same application in CUDA:
+        \begin{itemize}
+            \item You should write a CUDA kernel that performs the stencil operation and one for the matrix multiplication.
+            \item Initially make use of explicit memory copies from host to device and vice-versa and make use only of the default CUDA stream.
+            \item Make sure to add utility functions for error checking and for verifying your results.
+        \end{itemize}
+        \item Profile your code using nsys and document/comment on the time spent in each CUDA API call. Also, make note of the time spent on host and device.
+        \item Try switching from explicit memory copies to managed memory.
+        \begin{itemize}
+            \item Profile again using either nsys on ncu and comment on the performance of your application
+        \end{itemize}
+    \end{itemize}
+}\end{exr}
+
+Hello.
+
+
+% In this exercise, a 2D stencil of radius 2 is applied to all of the elements of a matrix. The input matrix \texttt{in}, which has dimensions \texttt{N*N}, but is padded so that its size is \texttt{(N+2*RADIUS)*(N+2*RADIUS)}, is first initialized so that all of its elements are 1. Then, after passing the matrix from host to device memory, the kernel \texttt{stencil\_2d} is called which transforms each of the elements of the matrix as follows (where $C$ is output matrix and $A$ is the input matrix):
+
+% \begin{align*}
+%     C_{ij} = \sum_{k=-2}^2 \sum_{l=-2}^2 A_{i+k,j+l},
+% \end{align*}
+
+% \noindent where elements with indices $i+k$ or $j+l$ outside of the range $[0, N-1]$  correspond to the padding elements of the matrix.
+
+% This implementation uses shared memory to reduce global memory traffic. Each thread loads its own input element into shared memory, while threads with x or y indices $<$ \texttt{RADIUS} also load the halo elements necessary for the stencil operation in both the x- and y-directions. The call to \texttt{\_\_syncthreads()} ensures that all threads in the block have completed caching the needed matrix elements into shared memory. Once synchronized, each thread in the block computes its corresponding output.
+
+% \lstinputlisting[caption={\ttfamily{stencil\_2d.cu}}, style=code]{../../assignment3/stencil_2d.cu}
+
+% \begin{lstlisting}[style=output]
+% [rcruzcan@cmsgpu01 assignment3]$ nvcc stencil_2d.cu -o objs/stencil_2d 
+% [rcruzcan@cmsgpu01 assignment3]$ ./objs/stencil_2d 
+% Success!
+% \end{lstlisting}
+
+
+% ------------------------------------------------------------------------
+\section{Optimizing Performance in CUDA}
+\begin{exr}{
+    \begin{itemize}
+        \item Optimize the performance of your code making use of non-default CUDA streams and shared memory.
+        \item Once you have decided on the best approach, profile your application and compare the time spent in each API call and the overall timing of your application with your initial CUDA implementation.
+    \end{itemize}
+}\end{exr}
+
+Hello.
+
+
+% ------------------------------------------------------------------------
+\section{Making Use of Alpaka}
+\begin{exr}{
+    \begin{itemize}
+        \item Re-write your application making use of the Alpaka portability library.
+        \item Describe the steps you had to follow to re-write your code.
+    \end{itemize}
+}\end{exr}
+
+
+% ------------------------------------------------------------------------
+\newpage
+\appendix
+
+\section{Setup Description}
+
+
+\end{document}

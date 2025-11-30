@@ -97,7 +97,7 @@ In this code, we take the dot product of two arrays. Firstly, it allocates the r
 
 \noindent In the kernel, each thread computes a single term in the above sum and adds it to \texttt{C}. This summation is done using \texttt{atomicAdd} in order to avoid a race condition. The result of these operations is then passed to the host device and the result is printed.
 
-\lstinputlisting[caption={\texttt{swap\_vectors.cu}}, style=code]{../../assignment3/dot_product.cu}
+\lstinputlisting[caption={\texttt{dot\_product.cu}}, style=code]{../../assignment3/dot_product.cu}
 
 \begin{lstlisting}[style=output]
 [rcruzcan@cmsgpu01 assignment3]$ nvcc dot_product.cu -o ./objs/dot_product 
@@ -125,14 +125,14 @@ Dot Product: 256
 In this exercise, a 2D stencil of radius 2 is applied to all of the elements of a matrix. The input matrix \texttt{in}, which has dimensions \texttt{N*N}, but is padded so that its size is \texttt{(N+2*RADIUS)*(N+2*RADIUS)}, is first initialized so that all of its elements are 1. Then, after passing the matrix from host to device memory, the kernel \texttt{stencil\_2d} is called which transforms each of the elements of the matrix as follows (where $C$ is output matrix and $A$ is the input matrix):
 
 \begin{align*}
-    C_{ij} = \sum_{k=-m}^m \sum_{l=-n}^n A_{i+k,j+l},
+    C_{ij} = \sum_{k=-2}^2 \sum_{l=-2}^2 A_{i+k,j+l},
 \end{align*}
 
-\noindent where $m=n=2$, and indices $k,l < 0$ and $k,l \geq$ \texttt{RADIUS} correspond to the padding elements of the matrix.
+\noindent where elements with indices $i+k$ or $j+l$ outside of the range $[0, N-1]$  correspond to the padding elements of the matrix.
 
-This implementation uses shared memory to reduce global memory traffic. Each thread loads its own input element into shared memory, while additional threads at the block boundaries also load the halo elements necessary for the stencil operation in both the x- and y-directions. The call to \texttt{\_\_syncthreads()} ensures that all threads in the block have completed caching the needed matrix elements into shared memory. Once synchronized, each thread in the block computes its corresponding output.
+This implementation uses shared memory to reduce global memory traffic. Each thread loads its own input element into shared memory, while threads with x or y indices $<$ \texttt{RADIUS} also load the halo elements necessary for the stencil operation in both the x- and y-directions. The call to \texttt{\_\_syncthreads()} ensures that all threads in the block have completed caching the needed matrix elements into shared memory. Once synchronized, each thread in the block computes its corresponding output.
 
-\lstinputlisting[caption={\ttfamily{add\_matrix.cu}}, style=code]{../../assignment3/stencil_2d.cu}
+\lstinputlisting[caption={\ttfamily{stencil\_2d.cu}}, style=code]{../../assignment3/stencil_2d.cu}
 
 \begin{lstlisting}[style=output]
 [rcruzcan@cmsgpu01 assignment3]$ nvcc stencil_2d.cu -o objs/stencil_2d 
