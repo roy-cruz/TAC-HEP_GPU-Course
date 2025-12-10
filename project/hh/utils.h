@@ -3,19 +3,9 @@
 
 #define RAD 3
 #define N 64
-
-#define cudaCheckErrors(msg)                                   \
-   do {                                                        \
-       cudaError_t __err = cudaGetLastError();                 \
-       if (__err != cudaSuccess) {                             \
-           fprintf(stderr, "Fatal error: %s (%s at %s:%d)\n",  \
-                   msg, cudaGetErrorString(__err),             \
-                   __FILE__, __LINE__);                        \
-           fprintf(stderr, "*** FAILED - ABORTING\n");         \
-           exit(1);                                            \
-       }                                                       \
-   } while (0)
-
+// Define block and grid sizes for CUDA kernels
+#define BLOCK_SIZE 16
+#define GRID_SIZE ((N + BLOCK_SIZE - 1) / BLOCK_SIZE)
 
 void init_matrix(
     int *mat, 

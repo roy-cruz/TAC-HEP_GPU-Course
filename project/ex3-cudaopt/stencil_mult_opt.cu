@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <cstdlib>
-#include "../hh/utils_cuda.h"
-#include "../hh/utils.h"
-#include "../hh/compute_funcs_ex3.h"
+#include "utils.h"
+#include "utils_cuda.h"
+#include "compute_funcs_ex3.h"
 
 using namespace std;
 /*

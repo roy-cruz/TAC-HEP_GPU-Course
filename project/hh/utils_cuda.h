@@ -1,6 +1,3 @@
-#define BLOCK_SIZE 16
-#define GRID_SIZE ((N + BLOCK_SIZE - 1) / BLOCK_SIZE)
-
 #define cudaCheckErrors(msg)                                   \
    do {                                                        \
        cudaError_t __err = cudaGetLastError();                 \

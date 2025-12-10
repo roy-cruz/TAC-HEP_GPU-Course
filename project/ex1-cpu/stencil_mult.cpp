@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <cstdlib>
-#include "../hh/utils.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -52,38 +52,19 @@ int main(void) {
     init_matrix(B_stenciled, 0, false);
     init_matrix(C, 0, false);
 
-    // STENCIL
-    compute_stencil(
-        A + (RAD * Np + RAD), 
-        A_stenciled, 
-        N, RAD
-    );
-    // print_mtrx(A_stenciled, N);
-    compute_stencil(
-        B + (RAD * Np + RAD),
-        B_stenciled,
-        N, RAD
-    );
-    // CHECK STENCIL
-    if (!check_stencil(A_stenciled)) {
-        printf("Stencil computation for A failed!\n");
-        return -1;
-    }
-    if (!check_stencil(B_stenciled)) {
-        printf("Stencil computation for B failed!\n");
-        return -1;
-    }
-    printf("Stencil computation passed!\n");
-    
-    // MATRIX MULTIPLICATION
+    // STENCIL & MULT
+    compute_stencil(A + (RAD * Np + RAD), A_stenciled, N, RAD);
+    compute_stencil(B + (RAD * Np + RAD), B_stenciled, N, RAD);
     matrix_mult(A_stenciled, B_stenciled, C);
     
-    // CHECK MULTIPLICATION
-    if (!check_mult(A_stenciled, B_stenciled, C)) {
-        printf("Matrix multiplication failed!\n");
-        return -1;
+    // VAL RESULTS
+    bool stencil_ok = check_stencil(A_stenciled) && check_stencil(B_stenciled);
+    bool mult_ok = check_mult(A_stenciled, B_stenciled, C);
+    if (stencil_ok && mult_ok) {
+        printf("Results OK!\n");
+    } else {
+        printf("Results MISMATCH!\n");
     }
-    printf("Matrix multiplication passed!\n");
 
     free(A);
     free(B);
