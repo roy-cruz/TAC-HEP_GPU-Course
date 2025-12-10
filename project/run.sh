@@ -9,8 +9,8 @@ echo "Compiling CUDA Managed"
 nvcc ex2-cuda/stencil_mult_managed.cu -o ./objs/stencil_mult_managed -I ./hh -O3
 echo "Compiling CUDA Optimized"
 nvcc ex3-cudaopt/stencil_mult_opt.cu -o ./objs/stencil_mult_opt -I ./hh -O3
-# echo "Compiling Alpaka"
-# 
+echo "Compiling Alpaka"
+nvcc ex4-alpaka/stencil_mult_alpaka.cpp -o ./objs/stencil_mult_alpaka -x cu -expt-relaxed-constexpr -std=c++20 -O3 -g -I ${HOME}/public/alpaka/include -D ALPAKA_ACC_GPU_CUDA_ENABLED -I ./hh
 
 echo "--------------------------"
 
@@ -26,5 +26,6 @@ time ./objs/stencil_mult_managed
 echo "--------------------------"
 echo "Running CUDA Optimized"
 time ./objs/stencil_mult_opt
-# echo "Running Alpaka"
-# ./objs/stencil_mult_alpaka
+echo "--------------------------"
+echo "Running Alpaka"
+time ./objs/stencil_mult_alpaka

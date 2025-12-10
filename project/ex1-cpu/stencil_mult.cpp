@@ -59,7 +59,7 @@ int main(void) {
     
     // VAL RESULTS
     bool stencil_ok = check_stencil(A_stenciled) && check_stencil(B_stenciled);
-    bool mult_ok = check_mult(A_stenciled, B_stenciled, C);
+    bool mult_ok = check_mult(C);
     if (stencil_ok && mult_ok) {
         printf("Results OK!\n");
     } else {

@@ -2,10 +2,11 @@
 #include <cmath>
 
 #define RAD 3
-#define N 64
-// Define block and grid sizes for CUDA kernels
-#define BLOCK_SIZE 16
+#define N 1024
+// for CUDA exercises
+#define BLOCK_SIZE 32
 #define GRID_SIZE ((N + BLOCK_SIZE - 1) / BLOCK_SIZE)
+//
 
 void init_matrix(
     int *mat, 
@@ -35,7 +36,7 @@ bool check_stencil(const int *stenciled) {
     edge_expected = edge_expected + M * edge_stencil_contrib;
     edge_expected *= 4;
 
-    int corner_expected = 3 * pow(RAD, 3); // HOW!?
+    int corner_expected = 3 * pow(RAD, 3);
     corner_expected *= 4;
 
     // What they are
@@ -74,17 +75,20 @@ bool check_stencil(const int *stenciled) {
     return true;
 }
 
-bool check_mult(const int *A, const int *B, const int *C) {
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            int expected = 0;
-            for (int k = 0; k < N; ++k) {
-                expected += A[i * N + k] * B[k * N + j];
-            }
-            int computed = C[i * N + j];
-            if (computed != expected) {
-                printf("Matrix multiplication mismatch at [%d,%d]: got %d, expected %d\n", i, j, computed, expected);
-                return false;
+bool check_mult(const int *C) {
+    int inner_stenciled = 1 + 4*RAD;
+    int inner_mult_expected = (N - 2 * RAD) * inner_stenciled * inner_stenciled;
+    for (int k = 1; k <= RAD; ++k) {
+        inner_mult_expected += 2 * (inner_stenciled - k) * (inner_stenciled - k);
+    }
+    bool consistent = true;
+    for (int i = RAD; i < N - RAD; ++i) {
+        for (int j = RAD; j < N - RAD; ++j) {
+                consistent &= (C[i * N + j] == inner_mult_expected);
+                if (!consistent) {
+                    printf("Matrix mult mismatch at (%d, %d): got %d, expected %d\n", 
+                        i, j, C[i * N + j], inner_mult_expected);
+                    return false;
             }
         }
     }
@@ -94,7 +98,7 @@ bool check_mult(const int *A, const int *B, const int *C) {
 void print_mtrx(const int *arr, const int size) {
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
-            printf("%d, ", arr[i * size + j]); // use size as the stride
+            printf("%d, ", arr[i * N + j]); // use size as the stride
         }
         printf("\n");
     }

@@ -34,42 +34,22 @@ int main(void) {
     dim3 grid(GRID_SIZE, GRID_SIZE);
     dim3 block(BLOCK_SIZE, BLOCK_SIZE);
     
-    // STENCIL
-    compute_stencil<<<grid, block>>>(
-        A + RAD * Np + RAD,
-        A_stn
-    );
-    compute_stencil<<<grid, block>>>(
-        B + RAD * Np + RAD, 
-        B_stn
-    );
+    // STENCIL & MULT
+    compute_stencil<<<grid, block>>>(A + RAD * Np + RAD, A_stn);
+    compute_stencil<<<grid, block>>>(B + RAD * Np + RAD, B_stn);
     cudaCheckErrors("compute_stencil kernel launch failure");
-    cudaDeviceSynchronize();
-    printf("Stencil A:\n");
-    // print_mtrx(A_stn, N);
-    
-    // CHECK STENCIL
-    if (!check_stencil(A_stn)) {
-        printf("Stencil computation for A failed!\n");
-        return -1;
-    }
-    if (!check_stencil(B_stn)) {
-        printf("Stencil computation for B failed!\n");
-        return -1;
-    }
-    printf("Stencil computation passed!\n");
-    
-    // MATRIX MULTIPLICATION
     matrix_mult<<<grid, block>>>(A_stn, B_stn, C);
     cudaCheckErrors("matrix_mult kernel launch failure");
     cudaDeviceSynchronize();
-    
-    // CHECK MULTIPLICATION
-    if (!check_mult(A_stn, B_stn, C)) {
-        printf("Matrix multiplication failed!\n");
-        return -1;
+
+    // VAL RESULTS
+    bool stencil_ok = check_stencil(A_stn) && check_stencil(B_stn);
+    bool mult_ok = check_mult(C);
+    if (stencil_ok && mult_ok) {
+        printf("Results OK!\n");
+    } else {
+        printf("Results MISMATCH!\n");
     }
-    printf("Matrix multiplication passed!\n");
 
     cudaFree(A);
     cudaFree(B);
