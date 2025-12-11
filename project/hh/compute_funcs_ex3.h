@@ -4,10 +4,10 @@ __global__ void compute_stencil(
 ) {
     
     __shared__ int temp[BLOCK_SIZE + 2 * RAD][BLOCK_SIZE + 2 * RAD];
-	// Global index: This is the index in the global memory
+    // Global mem idx
     int gindex_x = threadIdx.x + blockIdx.x * blockDim.x;
 	int gindex_y = threadIdx.y + blockIdx.y * blockDim.y;
-    // Local index: This is the index in the shared memory. It starts at RAD to leave space for the halo
+    // Local mem idx
 	int lindex_x = threadIdx.x + RAD;
 	int lindex_y = threadIdx.y + RAD;
     
@@ -39,13 +39,30 @@ __global__ void compute_stencil(
 }
 
 __global__ void matrix_mult(int *A, int *B, int *C) {
-    int idx = threadIdx.x + blockDim.x * blockIdx.x;
-    int idy = threadIdx.y + blockDim.y * blockIdx.y;
-    if ((idx < N) && (idy < N)) {
-        float temp = 0;
-        for (int k = 0; k < N; k++){
-            temp += A[idx * N + k] * B[k * N + idy];
+    int row = blockIdx.y * BLOCK_SIZE + threadIdx.y; // C row
+    int col = blockIdx.x * BLOCK_SIZE + threadIdx.x; // C col
+
+    __shared__ int As[BLOCK_SIZE][BLOCK_SIZE];
+    __shared__ int Bs[BLOCK_SIZE][BLOCK_SIZE];
+
+    int sum = 0; 
+
+    // Loop over tiles along K dimension
+    for (int t = 0; t < N; t += BLOCK_SIZE) {
+        As[threadIdx.y][threadIdx.x] = A[row * N + (t + threadIdx.x)]; 
+        Bs[threadIdx.y][threadIdx.x] = B[(t + threadIdx.y) * N + col];
+
+        __syncthreads();
+
+        // Compute partial dot product for this tile
+        for (int k = 0; k < BLOCK_SIZE; ++k) {
+            sum += As[threadIdx.y][k] * Bs[k][threadIdx.x];
         }
-        C[idx * N + idy] = temp;
+
+        __syncthreads();
+    }
+
+    if (row < N && col < N) {
+        C[row * N + col] = sum;
     }
 }

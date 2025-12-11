@@ -98,7 +98,7 @@ bool check_mult(const int *C) {
 void print_mtrx(const int *arr, const int size) {
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
-            printf("%d, ", arr[i * N + j]); // use size as the stride
+            printf("%d, ", arr[i * N + j]);
         }
         printf("\n");
     }

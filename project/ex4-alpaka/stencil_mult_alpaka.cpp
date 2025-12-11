@@ -67,16 +67,16 @@ int main() {
     int Np = N + 2*RAD;
     Idx size = N * N;
     Idx size_p = Np * Np;
-    auto A = alpaka::allocBuf<int, uint32_t>(host, size_p);
-    auto B = alpaka::allocBuf<int, uint32_t>(host, size_p);
-    auto A_stn = alpaka::allocBuf<int, uint32_t>(host, size);
-    auto B_stn = alpaka::allocBuf<int, uint32_t>(host, size);
-    auto C = alpaka::allocBuf<int, uint32_t>(host, size);
-    auto d_A = alpaka::allocBuf<int, uint32_t>(device, size_p);
-    auto d_B = alpaka::allocBuf<int, uint32_t>(device, size_p);
-    auto d_A_stn = alpaka::allocBuf<int, uint32_t>(device, size);
-    auto d_B_stn = alpaka::allocBuf<int, uint32_t>(device, size);
-    auto d_C = alpaka::allocBuf<int, uint32_t>(device, size);
+    auto A = alpaka::allocBuf<int, Idx>(host, size_p);
+    auto B = alpaka::allocBuf<int, Idx>(host, size_p);
+    auto A_stn = alpaka::allocBuf<int, Idx>(host, size);
+    auto B_stn = alpaka::allocBuf<int, Idx>(host, size);
+    auto C = alpaka::allocBuf<int, Idx>(host, size);
+    auto d_A = alpaka::allocBuf<int, Idx>(device, size_p);
+    auto d_B = alpaka::allocBuf<int, Idx>(device, size_p);
+    auto d_A_stn = alpaka::allocBuf<int, Idx>(device, size);
+    auto d_B_stn = alpaka::allocBuf<int, Idx>(device, size);
+    auto d_C = alpaka::allocBuf<int, Idx>(device, size);
     
     // Initialize data
     init_matrix(alpaka::getPtrNative(A), 1, true);
@@ -89,7 +89,10 @@ int main() {
     alpaka::memset(queue, d_C, 0x00);    
 
     // STENCIL & MULT
-    auto workdiv = makeWorkDiv<Acc2D>(Vec2D{BLOCK_SIZE, BLOCK_SIZE}, Vec2D{GRID_SIZE, GRID_SIZE});
+    auto threads = Vec2D{BLOCK_SIZE, BLOCK_SIZE};
+    auto blocks = Vec2D{GRID_SIZE, GRID_SIZE};
+
+    auto workdiv = makeWorkDiv<Acc2D>(threads, blocks);
     alpaka::exec<Acc2D>(
         queue, workdiv, StencilKernel{}, 
         alpaka::getPtrNative(d_A) + RAD * Np + RAD, 
