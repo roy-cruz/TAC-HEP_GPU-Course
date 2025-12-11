@@ -1,3 +1,5 @@
 *.o
 objs/
-README.md
+README.md 
+*.sqlite
+*.nsys-rep
