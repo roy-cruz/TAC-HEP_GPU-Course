@@ -63,7 +63,7 @@ endif
 
 ifeq ($(PROFILE_TOOL_$(name)),vtune)
 	vtune -collect hotspots -result-dir $(PROF_DIR)/vtune_$(name) $(PROFILE_TARGET_$(name))
-	vtune -report summary -result-dir $(PROF_DIR)/vtune_$(name) -format=csv > $(PROF_DIR)/profile_$(name).csv
+	vtune -report hotspots -result-dir $(PROF_DIR)/vtune_$(name) -format=csv > $(PROF_DIR)/profile_$(name).csv
 else
 	nsys profile --trace=cuda,osrt -o $(PROF_DIR)/nsys_$(name) $(PROFILE_TARGET_$(name))
 
