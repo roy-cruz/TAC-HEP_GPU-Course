@@ -97,28 +97,40 @@ The GitHub repository that hosts this code can be accessed via the following lin
     }
 \end{exr}
 
-Hello
+\lstinputlisting[caption={\texttt{stencil\_mult.cpp}}, style=code]{../../project/ex1-cpu/stencil_mult.cpp}
 
-% In this code, we take the dot product of two arrays. Firstly, it allocates the required memory in both the host and device, and passes the arrays \texttt{A} and \texttt{B} (all elements initialized to 1) and the result \texttt{int} variable C (initialized to 0) from host to device memory. Then the kernel \texttt{dot\_product} is called which computes the dot product:
+\begin{lstlisting}[style=output]
+[rcruzcan@g37n01 project]$ vtune -report summary -result-dir ./profiling/cpu_hotspots/
+vtune: Using result path `/mnt/ceph/home/rcruzcan/private/courses/GPUProg/tac-hep-gpus-roycruz/project/profiling/cpu_hotspots'
+vtune: Executing actions 75 % Generating a report                              Elapsed Time: 5.248s
+    CPU Time: 5.240s
+        Effective Time: 5.240s
+        Spin Time: 0s
+        Overhead Time: 0s
+    Total Thread Count: 1
+    Paused Time: 0s
 
-% \begin{align*}
-%     C = \vec A \cdot \vec B = \sum_{i}A_iB_i
-% \end{align*}
-
-% \noindent In the kernel, each thread computes a single term in the above sum and adds it to \texttt{C}. This summation is done using \texttt{atomicAdd} in order to avoid a race condition. The result of these operations is then passed to the host device and the result is printed.
-
-% \lstinputlisting[caption={\texttt{dot\_product.cu}}, style=code]{../../assignment3/dot_product.cu}
-
-% \begin{lstlisting}[style=output]
-% [rcruzcan@cmsgpu01 assignment3]$ nvcc dot_product.cu -o ./objs/dot_product 
-% [rcruzcan@cmsgpu01 assignment3]$ ./objs/dot_product 
-% A (first 10 elements out of 256):
-% 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-% B (first 10 elements out of 256):
-% 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
-
-% Dot Product: 256
-% \end{lstlisting}
+Top Hotspots
+Function         Module            CPU Time  % of CPU Time(%)
+---------------  ----------------  --------  ----------------
+matrix_mult      stencil_mult_cpu    5.220s             99.6%
+compute_stencil  stencil_mult_cpu    0.020s              0.4%
+Collection and Platform Info
+    Application Command Line: objs/stencil_mult_cpu
+    Operating System: 6.1.156-1.el9.elrepo.x86_64 \S Kernel \r on an \m
+    Computer Name: g37n01.hep.wisc.edu
+    Result Size: 3.7 MB
+    Collection start time: 06:39:47 11/12/2025 UTC
+    Collection stop time: 06:39:53 11/12/2025 UTC
+    Collector Type: User-mode sampling and tracing
+    CPU
+        Name: Unknown
+        Frequency: 3.000 GHz
+        Logical CPU Count: 64
+        Cache Allocation Technology
+            Level 2 capability: not detected
+            Level 3 capability: available
+\end{lstlisting}
 
 
 % ------------------------------------------------------------------------
@@ -140,27 +152,10 @@ Hello
     \end{itemize}
 }\end{exr}
 
-Hello.
+\lstinputlisting[caption={\texttt{compute\_funcs\_ex2.h}}, style=code]{../../project/hh/compute_funcs_ex2.h}
 
-
-% In this exercise, a 2D stencil of radius 2 is applied to all of the elements of a matrix. The input matrix \texttt{in}, which has dimensions \texttt{N*N}, but is padded so that its size is \texttt{(N+2*RADIUS)*(N+2*RADIUS)}, is first initialized so that all of its elements are 1. Then, after passing the matrix from host to device memory, the kernel \texttt{stencil\_2d} is called which transforms each of the elements of the matrix as follows (where $C$ is output matrix and $A$ is the input matrix):
-
-% \begin{align*}
-%     C_{ij} = \sum_{k=-2}^2 \sum_{l=-2}^2 A_{i+k,j+l},
-% \end{align*}
-
-% \noindent where elements with indices $i+k$ or $j+l$ outside of the range $[0, N-1]$  correspond to the padding elements of the matrix.
-
-% This implementation uses shared memory to reduce global memory traffic. Each thread loads its own input element into shared memory, while threads with x or y indices $<$ \texttt{RADIUS} also load the halo elements necessary for the stencil operation in both the x- and y-directions. The call to \texttt{\_\_syncthreads()} ensures that all threads in the block have completed caching the needed matrix elements into shared memory. Once synchronized, each thread in the block computes its corresponding output.
-
-% \lstinputlisting[caption={\ttfamily{stencil\_2d.cu}}, style=code]{../../assignment3/stencil_2d.cu}
-
-% \begin{lstlisting}[style=output]
-% [rcruzcan@cmsgpu01 assignment3]$ nvcc stencil_2d.cu -o objs/stencil_2d 
-% [rcruzcan@cmsgpu01 assignment3]$ ./objs/stencil_2d 
-% Success!
-% \end{lstlisting}
-
+\lstinputlisting[caption={\texttt{stencil\_mult\_explicit.cu}}, style=code]{../../project/ex2-cuda/stencil_mult_explicit.cu}
+\lstinputlisting[caption={\texttt{stencil\_mult\_managed.cu}}, style=code]{../../project/ex2-cuda/stencil_mult_managed.cu}
 
 % ------------------------------------------------------------------------
 \section{Optimizing Performance in CUDA}
@@ -171,8 +166,9 @@ Hello.
     \end{itemize}
 }\end{exr}
 
-Hello.
+\lstinputlisting[caption={\texttt{compute\_funcs\_ex3.h}}, style=code]{../../project/hh/compute_funcs_ex3.h}
 
+\lstinputlisting[caption={\texttt{stencil\_mult\_managed.cu}}, style=code]{../../project/ex3-cudaopt/stencil_mult_opt.cu}
 
 % ------------------------------------------------------------------------
 \section{Making Use of Alpaka}
