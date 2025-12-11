@@ -100,9 +100,7 @@ The CPU implementation of the matrix stencil and multiplication code uses the tw
 
 This code served as the baseline for the other versions of the code. The following shows the outcome of the progiling, which shows that the execution took an effective time of $5.240 \text{ s}$, $99.6\%$ out of which was just spent on the matrix multiplication, which dominated all other parts of the code. The \texttt{compute_stencil}, on the other hand, only took up $0.020 \text{ s}$, or $0.4\%$ of the time.
 
- \begin{tabular}%
-    \csvreader[head to column names]{../../project/profiling/profile_cpu.csv}{}
-\end{tabular}
+
 
 % \begin{lstlisting}[style=output]
 % [rcruzcan@g37n01 project]$ vtune -report summary -result-dir ./profiling/cpu_hotspots/
