@@ -14,8 +14,6 @@
 \definecolor{backcolour}{rgb}{0.95,0.95,0.92}
 
 \usepackage{listings}
-\lstset{language=C++}
-\lstset{breaklines=true}
 \lstset{
     literate={"}{{\texttt{"}}}1
              {'}{{\texttt{'}}}1
@@ -56,7 +54,6 @@
 
 \renewcommand{\lstlistingname}{Code block}
 
-
 \newcounter{exercise}
 \newenvironment{exr}[1]{%
     \refstepcounter{exercise}
@@ -81,7 +78,6 @@
 
 The GitHub repository that hosts this code can be accessed via the following link: \href{https://github.com/roy-cruz/TAC-HEP_GPU-Course_Assignments/tree/master}{link}
 
-
 \section{C++ and CPU Profiling}
 \begin{exr}{
     \begin{itemize}
@@ -97,40 +93,49 @@ The GitHub repository that hosts this code can be accessed via the following lin
     }
 \end{exr}
 
-\lstinputlisting[caption={\texttt{stencil\_mult.cpp}}, style=code]{../../project/ex1-cpu/stencil_mult.cpp}
+The CPU implementation of the matrix stencil and multiplication code uses the two serial functions shown in the following code snippet.
 
-\begin{lstlisting}[style=output]
-[rcruzcan@g37n01 project]$ vtune -report summary -result-dir ./profiling/cpu_hotspots/
-vtune: Using result path `/mnt/ceph/home/rcruzcan/private/courses/GPUProg/tac-hep-gpus-roycruz/project/profiling/cpu_hotspots'
-vtune: Executing actions 75 % Generating a report                              Elapsed Time: 5.248s
-    CPU Time: 5.240s
-        Effective Time: 5.240s
-        Spin Time: 0s
-        Overhead Time: 0s
-    Total Thread Count: 1
-    Paused Time: 0s
+\lstinputlisting[caption={\texttt{stencil\_mult.cpp}}, style=code, firstline=7,lastline=35]{../../project/ex1-cpu/stencil_mult.cpp}
 
-Top Hotspots
-Function         Module            CPU Time  % of CPU Time(%)
----------------  ----------------  --------  ----------------
-matrix_mult      stencil_mult_cpu    5.220s             99.6%
-compute_stencil  stencil_mult_cpu    0.020s              0.4%
-Collection and Platform Info
-    Application Command Line: objs/stencil_mult_cpu
-    Operating System: 6.1.156-1.el9.elrepo.x86_64 \S Kernel \r on an \m
-    Computer Name: g37n01.hep.wisc.edu
-    Result Size: 3.7 MB
-    Collection start time: 06:39:47 11/12/2025 UTC
-    Collection stop time: 06:39:53 11/12/2025 UTC
-    Collector Type: User-mode sampling and tracing
-    CPU
-        Name: Unknown
-        Frequency: 3.000 GHz
-        Logical CPU Count: 64
-        Cache Allocation Technology
-            Level 2 capability: not detected
-            Level 3 capability: available
-\end{lstlisting}
+
+This code served as the baseline for the other versions of the code. The following shows the outcome of the progiling, which shows that the execution took an effective time of $5.240 \text{ s}$, $99.6\%$ out of which was just spent on the matrix multiplication, which dominated all other parts of the code. The \texttt{compute_stencil}, on the other hand, only took up $0.020 \text{ s}$, or $0.4\%$ of the time.
+
+ \begin{tabular}%
+    \csvreader[head to column names]{../../project/profiling/profile_cpu.csv}{}
+\end{tabular}
+
+% \begin{lstlisting}[style=output]
+% [rcruzcan@g37n01 project]$ vtune -report summary -result-dir ./profiling/cpu_hotspots/
+% vtune: Using result path `/mnt/ceph/home/rcruzcan/private/courses/GPUProg/tac-hep-gpus-roycruz/project/profiling/cpu_hotspots'
+% vtune: Executing actions 75 % Generating a report                              Elapsed Time: 5.248s
+%     CPU Time: 5.240s
+%         Effective Time: 5.240s
+%         Spin Time: 0s
+%         Overhead Time: 0s
+%     Total Thread Count: 1
+%     Paused Time: 0s
+
+% Top Hotspots
+% Function         Module            CPU Time  % of CPU Time(%)
+% ---------------  ----------------  --------  ----------------
+% matrix_mult      stencil_mult_cpu    5.220s             99.6%
+% compute_stencil  stencil_mult_cpu    0.020s              0.4%
+% Collection and Platform Info
+%     Application Command Line: objs/stencil_mult_cpu
+%     Operating System: 6.1.156-1.el9.elrepo.x86_64 \S Kernel \r on an \m
+%     Computer Name: g37n01.hep.wisc.edu
+%     Result Size: 3.7 MB
+%     Collection start time: 06:39:47 11/12/2025 UTC
+%     Collection stop time: 06:39:53 11/12/2025 UTC
+%     Collector Type: User-mode sampling and tracing
+%     CPU
+%         Name: Unknown
+%         Frequency: 3.000 GHz
+%         Logical CPU Count: 64
+%         Cache Allocation Technology
+%             Level 2 capability: not detected
+%             Level 3 capability: available
+% \end{lstlisting}
 
 
 % ------------------------------------------------------------------------
@@ -185,6 +190,35 @@ Collection and Platform Info
 \appendix
 
 \section{Setup Description}
+
+This project was developed and run on a GPU node on the Wisconsin Analysis Facility. In this computing system, setting up CUDA for compilation consisted of running
+
+\begin{lstlisting}[style=output]
+export PATH=$PATH:/usr/local/cuda/bin
+export LD_LIBRARY_PATH=/usr/local/cuda/lib
+\end{lstlisting}
+
+To compile the implementation of the code that uses Alpaka, we followed the setup instructions provided in the Alpaka lecture, which consisted of simply cloning the official Alpaka repo by running the following command.
+
+\begin{lstlisting}[style=output]
+git clone https://github.com/alpaka-group/alpaka.git -b 2.0.0 ${HOME}/public/alpaka
+\end{lstlisting}
+
+In order conveniently re-run the compilation of the code during development, a Make file was constructed. In this file, the compilation of the different versions of the matrix stenciling and multiplication code were compiled using the following commands.
+
+\begin{lstlisting}[style=output]
+g++ ex1-cpu/stencil_mult.cpp -o objs/stencil_mult_cpu -O3 -g -I ./hh
+nvcc ex2-cuda/stencil_mult_explicit.cu -o objs/stencil_mult_explicit -O3 -I ./hh
+nvcc ex2-cuda/stencil_mult_managed.cu -o objs/stencil_mult_managed -O3 -I ./hh
+nvcc ex3-cudaopt/stencil_mult_opt.cu -o objs/stencil_mult_opt -O3 -I ./hh
+nvcc ex4-alpaka/stencil_mult_alpaka.cpp -o objs/stencil_mult_alpaka -x cu -expt-relaxed-constexpr -std=c++20 -O3 -g -I /mnt/ceph/home/rcruzcan/public/alpaka/include -D ALPAKA_ACC_GPU_CUDA_ENABLED -I ./hh -Wno-deprecated-declarations
+\end{lstlisting}
+
+Note that the \texttt{hh} directory contained a collection of header files with utilities used by the different version of the implemented algorithm. Of particular note are \texttt{config.h} and \texttt{WorkDiv.hpp}, which contain helpful utilities for the Alpaka version of the code, and which were fetched from \href{https://github.com/fwyzard/intro_to_alpaka/tree/master/alpaka}{this} repository that was part of the instructional material for the Alpaka lecture. 
+
+
+
+\section{Results Validation}
 
 
 \end{document}
