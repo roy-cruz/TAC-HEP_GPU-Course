@@ -12,7 +12,9 @@ All of the implementations are profiled using appropriate tools for their implem
 >   - Make sure that you also add utility functions to check your results. 
 > - Profile your C++ code using the VTune profiler and identify the compute intensive parts.
 
-The CPU implementation of the matrix stencil and multiplication C++ script can be found [here](./ex1-cpu/stencil_mult.cpp). This serial code was profiled using `vtune`, the resutls of which can be found in [profile_cpu.csv](./profiling/profile_cpu.csv). From the results displayed in this file, it is clear that `matrix_mult` composed the slowest and most computationally costly part of the algorithm. In fact, most of the time spent running this implementation is spent running this function, which takes up ~99% of the computing time.
+The CPU implementation of the matrix stencil and multiplication C++ script can be found [here](./ex1-cpu/stencil_mult.cpp). This serial code was profiled using `vtune`, the resutls of which can be found in [profile_cpu.csv](./profiling/profile_cpu.csv). From the results displayed in this file, it is clear that `matrix_mult` composed the slowest and most computationally costly part of the algorithm. In fact, most of the time spent running this implementation is spent running this function, which takes up ~99.4% of the computing time. Moreover, looking at the effective CPU utilization histogram offered available in the VTune GUI interphase, we can see that, as expected for this fully serial baseline implementation, the average effective CPU utilization is very low.
+
+![Effective CPU Utilization Histogram](./assets/effcpuutil.png)
 
 ## Porting to CUDA
 
@@ -23,6 +25,10 @@ The CPU implementation of the matrix stencil and multiplication C++ script can b
 > - Profile your code using nsys and document/comment on the time spent in each CUDA API call. Also, make note on the time spent on host and device.
 > - Try switching from explicit memory copies to managed memory. 
 >    - Profile again using either nsys on ncu and comment on the performance of your application. 
+
+Given that the two implementations made for the CUDA port of the algorithm were only meant to differ by how the memory was handled (i.e. explicit copies vs. managed memory), the `compute_stencil` and `matrix_mult` kernels were implemented in a separate header file, namely [compute_funcs_ex2.h](./hh/compute_funcs_ex2.h) which was included in both implementations. These implementations are relatively simple, as they don't use any shared memory, and only the default CUDA stream is used when they were called.
+
+Profiling was performed using `nsys`, as can be seen in the `profile` rule in [Makefile](./Makefile). The results were
 
 
 ## Optimizing performance in CUDA
