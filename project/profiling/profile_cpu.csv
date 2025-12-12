@@ -1,4 +1,4 @@
-Function,CPU Time,CPU Time:Effective Time,CPU Time:Spin Time,CPU Time:Overhead Time,Module,Function (Full),Source File,Start Address
-matrix_mult,5.109899,5.109899,0.0,0.0,stencil_mult_cpu,matrix_mult(int*, int*, int*),stencil_mult.cpp,0x401980
-compute_stencil,0.020013,0.020013,0.0,0.0,stencil_mult_cpu,compute_stencil(int*, int*, int, int),stencil_mult.cpp,0x401860
-cfree,0.010000,0.010000,0.0,0.0,libc.so.6,cfree,[Unknown],0x9b3c0
+Function	CPU Time	CPU Time:Effective Time	CPU Time:Spin Time	CPU Time:Overhead Time	Module	Function (Full)	Source File	Start Address
+matrix_mult	5.109899	5.109899	0.0	0.0	stencil_mult_cpu	matrix_mult(int*, int*, int*)	stencil_mult.cpp	0x401980
+compute_stencil	0.020013	0.020013	0.0	0.0	stencil_mult_cpu	compute_stencil(int*, int*, int, int)	stencil_mult.cpp	0x401860
+cfree	0.010000	0.010000	0.0	0.0	libc.so.6	cfree	[Unknown]	0x9b3c0
