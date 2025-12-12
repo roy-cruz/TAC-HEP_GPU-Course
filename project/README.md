@@ -1,18 +1,39 @@
 # **Final Project**
 
-This project seeks to combine the knowledge gained so far through the course by implementing various versions of a 2D stencil operation and matrix multiplication algorithm. In all versions, two input square matrices, `A` and `B`, of size `N` and initialized so that all of their elements are 1, go through a 2D stencil operation with radius `RAD`[^1]. The stenciled version of both matrices are then multiplied together. 
+This project seeks to incorporate what has been discussed in the course by implementing various versions of a 2D stencil operation and matrix multiplication algorithm. In all versions, two input square matrices, `A` and `B`, of size `N` and initialized so that all of their elements are 1. After initialization, a 2D stencil operation with radius `RAD`[^1] is applied to both matrices. The stenciled version of both matrices are then multiplied together. The results from these computations are validated using a pair of utility functions defined in [utils.h](./hh/utils.h). More information about how these functions work is provided in the Appendix. In accordance with the project instructions, we used `DSIZE =  N = 1024` and `RAD = 3`.
 
+All of the implementations are profiled using appropriate tools for their implementation. For the CPU version, we use `vtune`, while for the CUDA and the Alpaka versions of the code we use `nsys`. This is done through the `profile` rule in [Makefile](./Makefile), which stores the output of these profilings in corresponding `.csv` files which can be found in the [`profiling/`](./profiling/) directory.
 
-Goal of the final project is to combine most of the knowledge you have gained over the past weeks. You will build your code based on many things you have already implemented in previous exercises:
 ## C++ and CPU Profiling
+> - Start by writing a code in C++ that :
+>   - Creates two 2-dimensional square matrices A and B of size DSIZE >= 512 and fill them in with arbitrary integer values.
+>   - Performs a 2-d stencil operation on each matrix. You can use any radius size, but keep it > 2.
+>   - Performs a matrix multiplication of the matrices after the stencil application
+>   - Make sure that you also add utility functions to check your results. 
+> - Profile your C++ code using the VTune profiler and identify the compute intensive parts.
 
-The CPU implementation of the matrix stencil and multiplication C++ script can be found [here](./ex1-cpu/stencil_mult.cpp). This serial code was profiled using `vtune` 
+The CPU implementation of the matrix stencil and multiplication C++ script can be found [here](./ex1-cpu/stencil_mult.cpp). This serial code was profiled using `vtune`, the resutls of which can be found in [profile_cpu.csv](./profiling/profile_cpu.csv). From the results displayed in this file, it is clear that `matrix_mult` composed the slowest and most computationally costly part of the algorithm. In fact, most of the time spent running this implementation is spent running this function, which takes up ~99% of the computing time.
 
 ## Porting to CUDA
 
+> - Write the same application in CUDA: 
+>   - You should write a CUDA kernel that performs the stencil operation and one for the matrix multiplication.
+>   - Initially make use of explicit memory copies from host to device and vice-versa and make use only of the default CUDA stream.
+>   - Make sure to add utility functions for error checking and for verifying your results.
+> - Profile your code using nsys and document/comment on the time spent in each CUDA API call. Also, make note on the time spent on host and device.
+> - Try switching from explicit memory copies to managed memory. 
+>    - Profile again using either nsys on ncu and comment on the performance of your application. 
+
+
 ## Optimizing performance in CUDA
 
+> - Optimize the performance of your code making use of non-default CUDA streams and shared memory. 
+> - Once you have decided on the best approach, profile your application and compare the time spent in each API call and the overall timing of your application with your initial CUDA implementation.
+
 ## Making use of Alpaka
+
+> - Re-write your application making use of the Alpaka portability library.
+> - Describe the steps you had to follow to re-write your code.
 
 
 ## Appendix
@@ -47,37 +68,3 @@ Note that the `hh` directory contained a collection of header files with utiliti
 
 ---
 [^1]: `N` and `RAD` are specified in [utils.h](./hh/utils.h), which is included in all versions of the algorithm so that they all share these same values.
-
-<!-- 
-
-### Goal of the final project is to combine most of the knowledge you have gained over the past weeks. You will build your code based on many things you have already implemented in previous exercises:
-
-## C++ and CPU profiling 
-- Start by writing a code in C++ that :
-  - Creates two 2-dimensional square matrices A and B of size DSIZE >= 512 and fill them in with arbitrary integer values.
-  - Performs a 2-d stencil operation on each matrix. You can use any radius size, but keep it > 2.
-  - Performs a matrix multiplication of the matrices after the stencil application
-  - Make sure that you also add utility functions to check your results. 
-- Profile your C++ code using the VTune profiler and identify the compute intensive parts.
-
-## Porting to CUDA
-- Write the same application in CUDA: 
-  - You should write a CUDA kernel that performs the stencil operation and one for the matrix multiplication.
-  - Initially make use of explicit memory copies from host to devise and vise-versa and make use only of the default CUDA stream.
-  - Make sure to add utility functions for error checking and for verifying your results.
-- Profile your code using nsys and document/comment on the time spent in each CUDA API call. Also, make note on the time spent on host and device.
-- Try switching from explicit memory copies to managed memory. 
-   - Profile again using either nsys on ncu and comment on the performance of your application. 
-
-## Optimizing performance in CUDA
-- Optimize the performance of your code making use of non-default CUDA streams and shared memory. 
-- Once you have decided on the best approach, profile your application and compare the time spent in each API call and the overall timing of your application with your initial CUDA implementation.
-
-## Making use of Alpaka
-- Re-write your application making use of the Alpaka portability library.
-- Describe the steps you had to follow to re-write your code.
-
-
-### Some things to remember :
-- Include instructions on how you set-up the environment, compile and execute your C++/ CUDA/ Alpaka application.
-- Save the output of the profiler for the results you will report in your project (in csv, txt or any other format you prefer). -->
