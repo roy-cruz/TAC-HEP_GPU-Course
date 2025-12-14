@@ -1,3 +1,0 @@
-Time (%),Total Time (ns),Instances,Avg (ns),Med (ns),Min (ns),Max (ns),StdDev (ns),Name
-99.0,83397588,1,83397588.0,83397588.0,83397588,83397588,0.0,"matrix_mult(int *, int *, int *)"
-1.0,880043,2,440021.5,440021.5,440021,440022,0.7,"compute_stencil(int *, int *)"

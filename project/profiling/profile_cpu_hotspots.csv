@@ -1,0 +1,5 @@
+Function	CPU Time	CPU Time:Effective Time	CPU Time:Spin Time	CPU Time:Overhead Time	Module	Function (Full)	Source File	Start Address
+matrix_mult	4.849911	4.849911	0.0	0.0	stencil_mult_cpu	matrix_mult(int*, int*, int*)	stencil_mult.cpp	0x401980
+compute_stencil	0.029981	0.029981	0.0	0.0	stencil_mult_cpu	compute_stencil(int*, int*, int, int)	stencil_mult.cpp	0x401860
+init_matrix	0.010037	0.010037	0.0	0.0	stencil_mult_cpu	init_matrix(int*, int, bool)	utils.h	0x4012c0
+check_stencil	0.009996	0.009996	0.0	0.0	stencil_mult_cpu	check_stencil(int const*)	utils.h	0x401550

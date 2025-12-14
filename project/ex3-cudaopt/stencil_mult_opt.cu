@@ -5,13 +5,6 @@
 #include "compute_funcs_ex3.h"
 
 using namespace std;
-/*
-Main optimizations:
-- Shared memory now being used in both stencil and matrix mult
-- Explicit memory copies
-- Remove unneccesary cuda synchronize since mem copies are blocking
-- Using streams to parallelize data copies and stencil kernel executions
-*/
 
 int main(void) {
     

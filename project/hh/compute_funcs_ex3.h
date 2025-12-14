@@ -25,16 +25,14 @@ __global__ void compute_stencil(
     }
     __syncthreads();
 
-    // Apply the stencil
+    // stencil
     int result = temp[lindex_x][lindex_y];
     for (int offset = -RAD; offset <= RAD; offset++){
-        if (offset != 0){ // To avoid adding the temp[lindex_x][launch_y] element twice
+        if (offset != 0){ 
             result += temp[lindex_x + offset][lindex_y];
             result += temp[lindex_x][lindex_y + offset];
         }
     }
-    
-    // Store the result
     output[gindex_x * N + gindex_y] = result;
 }
 

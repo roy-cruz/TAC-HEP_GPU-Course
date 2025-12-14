@@ -16,7 +16,7 @@ CUDA_MANAGED_EXE  := $(OBJS)/stencil_mult_managed
 CUDA_OPT_EXE      := $(OBJS)/stencil_mult_opt
 ALPAKA_EXE        := $(OBJS)/stencil_mult_alpaka
 
-all: $(CPU_EXE) $(CUDA_EXPLICIT_EXE) $(CUDA_MANAGED_EXE) $(CUDA_OPT_EXE) $(ALPAKA_EXE)
+compile: $(CPU_EXE) $(CUDA_EXPLICIT_EXE) $(CUDA_MANAGED_EXE) $(CUDA_OPT_EXE) $(ALPAKA_EXE)
 
 $(CPU_EXE): ex1-cpu/stencil_mult.cpp | $(OBJS)
 	$(CXX) $< -o $@ $(CXXFLAGS)
@@ -52,60 +52,75 @@ PROFILE_TOOL_managed  := nsys
 PROFILE_TOOL_opt      := nsys
 PROFILE_TOOL_alpaka   := nsys
 
-profile: $(PROF_DIR)
+profiling: make_prof_dir
 ifeq ($(PROFILE_TARGET_$(name)),)
 	$(error Unknown profile target '$(name)'. Valid options: cpu explicit managed opt alpaka)
 endif
-
 	@echo "Profiling target: $(name)"
 	@echo "Executable: $(PROFILE_TARGET_$(name))"
 	@echo "Profiler: $(PROFILE_TOOL_$(name))"
-
 ifeq ($(PROFILE_TOOL_$(name)),vtune)
 	vtune -collect hotspots -result-dir $(PROF_DIR)/vtune_$(name) $(PROFILE_TARGET_$(name))
-	vtune -report hotspots -result-dir $(PROF_DIR)/vtune_$(name) -format=csv > $(PROF_DIR)/profile_$(name).csv
 else
-	nsys profile --trace=cuda,osrt -o $(PROF_DIR)/nsys_$(name) $(PROFILE_TARGET_$(name))
-
-	@echo "Exporting CSV for $(name)..."
-
-	nsys stats --report osrt_sum --format csv \
-	    -o $(PROF_DIR)/profile_$(name)_osrt.csv \
-	    $(PROF_DIR)/nsys_$(name).nsys-rep
-
-	nsys stats --report cuda_api_sum --format csv \
-	    -o $(PROF_DIR)/profile_$(name)_apisum.csv \
-	    $(PROF_DIR)/nsys_$(name).nsys-rep
-
-	nsys stats --report cuda_gpu_kern_sum --format csv \
-	    -o $(PROF_DIR)/profile_$(name)_kernsum.csv \
-	    $(PROF_DIR)/nsys_$(name).nsys-rep
-
-	nsys stats --report cuda_gpu_mem_time_sum --format csv \
-	    -o $(PROF_DIR)/profile_$(name)_memsum.csv \
-	    $(PROF_DIR)/nsys_$(name).nsys-rep
+	nsys profile --trace=cuda,osrt --stats=true --cuda-memory-usage=true -o $(PROF_DIR)/nsys_$(name) $(PROFILE_TARGET_$(name))
 endif
-
 	@echo "Profiling for $(name) complete."
 
-$(PROF_DIR):
+output_profile:
+ifeq ($(PROFILE_TARGET_$(name)),)
+	$(error Unknown profile target '$(name)'. Valid options: cpu explicit managed opt alpaka)
+endif
+	@echo "Generating profile output for $(name)..."
+
+ifeq ($(PROFILE_TOOL_$(name)),vtune)
+	vtune -report hotspots -result-dir $(PROF_DIR)/vtune_$(name) -format=csv > $(PROF_DIR)/profile_$(name)_hotspots.csv
+	vtune -report summary -result-dir $(PROF_DIR)/vtune_$(name) -format=csv > $(PROF_DIR)/profile_$(name)_summary.csv
+else
+	nsys stats --report osrt_sum --format csv --force-export=true \
+	    -o $(PROF_DIR)/profile_$(name) \
+	    $(PROF_DIR)/nsys_$(name).nsys-rep
+
+	nsys stats --report cuda_api_sum --format csv --force-export=true \
+	    -o $(PROF_DIR)/profile_$(name) \
+	    $(PROF_DIR)/nsys_$(name).nsys-rep
+
+	nsys stats --report cuda_gpu_kern_sum --format csv --force-export=true \
+	    -o $(PROF_DIR)/profile_$(name) \
+	    $(PROF_DIR)/nsys_$(name).nsys-rep
+
+	nsys stats --report cuda_gpu_mem_time_sum --format csv --force-export=true \
+	    -o $(PROF_DIR)/profile_$(name) \
+	    $(PROF_DIR)/nsys_$(name).nsys-rep
+
+	nsys stats --report gputrace --format csv --force-export=true \
+		-o $(PROF_DIR)/profile_$(name) \
+		$(PROF_DIR)/nsys_$(name).nsys-rep
+endif
+	@echo "Profile output for $(name) generated."
+
+
+
+run_all_profiles: compile
+	$(MAKE) profiling name=cpu
+	$(MAKE) profiling name=explicit
+	$(MAKE) profiling name=managed
+	$(MAKE) profiling name=opt
+	$(MAKE) profiling name=alpaka
+
+	$(MAKE) output_profile name=cpu
+	$(MAKE) output_profile name=explicit
+	$(MAKE) output_profile name=managed
+	$(MAKE) output_profile name=opt
+	$(MAKE) output_profile name=alpaka
+	
+# UTILS
+make_prof_dir:
 	mkdir -p $(PROF_DIR)
 
-run_all_profiles: clean_all all $(PROF_DIR)
-	$(MAKE) profile name=cpu
-	$(MAKE) profile name=explicit
-	$(MAKE) profile name=managed
-	$(MAKE) profile name=opt
-	$(MAKE) profile name=alpaka
-	
-# CLEAN
 clean_objs:
 	rm -rf $(OBJS)
 
 clean_prof:
 	rm -rf $(PROF_DIR)
 
-clean_all:
-	rm -rf $(OBJS) $(PROF_DIR)
-
-.PHONY: all clean
+clean_all: clean_objs clean_prof
